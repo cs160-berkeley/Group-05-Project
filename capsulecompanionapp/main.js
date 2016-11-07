@@ -99,8 +99,8 @@ let home = new homeScreen();
 var labelStyle = new Style( { font: "bold 25px", color:"black" } );
 var labelStyle2 = new Style( { font: "bold 20px", color:"black" } );
 var labelStyle3 = new Style( { font: "20px", color:"black" } );
-let orangeSkin = new Skin({ fill: 'white' });
-let bigText = new Style({ font: "bold 14px", color: "#333333" });
+var orangeSkin = new Skin({ fill: 'white' });
+var bigText = new Style({ font: "bold 14px", color: "#333333" });
 
 var reheat = new Label({name: "reheat", left:0, right: 0, top:50, height:20, string:"Reheat Lasagna Container", style: labelStyle});
 
@@ -148,29 +148,22 @@ let ReheatPage = Container.template($ => ({
 
 
 // LOCK PAGE
-
-var labelStyle = new Style( { font: "bold 25px", color:"black" } );
-var labelStyle2 = new Style( { font: "bold 20px", color:"black" } );
-var labelStyle3 = new Style( { font: "20px", color:"black" } );
-let orangeSkin = new Skin({ fill: 'white' });
-let bigText = new Style({ font: "bold 14px", color: "#333333" });
-
 var lock = new Label({name: "lock", left:0, right: 0, top:50, height:20, string:"Lock My Avocado Container", style: labelStyle});
 
-var container = new Container({
+let container2 = new Container({
 left: 0, right: 0, top: 80,height:2,
 skin: new Skin({ fill: "black" })
 });
 
-let kinomaLogo = new Picture({height: 90, url: "assets/avocado.jpg"});
-kinomaLogo.coordinates = {height: 110, left: 0, right:0, top: 105, width: 100};
+let kinomaLogo2 = new Picture({height: 90, url: "assets/avocado.jpg"});
+kinomaLogo2.coordinates = {height: 110, left: 0, right:0, top: 105, width: 100};
 
-var until = new Label({name: "until", left:0, right: 120, top:280, height:20, string:"Lock until:", style: labelStyle2});
+var until2 = new Label({name: "until", left:0, right: 120, top:280, height:20, string:"Lock until:", style: labelStyle2});
 
 // var date = new Label({name: "date", left:0, right: 30, top:340, height:20, string:"Date:", style: labelStyle3});
 
 // Reheat button
-let MyButtonTemplate = Button.template($ => ({
+let MyButtonTemplate2 = Button.template($ => ({
     top: 310, left: 0, right: 0,
     contents: [
         Label($, {left: 0, right: 0, height: 14, string: "Lock", style: bigText})
@@ -186,9 +179,9 @@ let LockPage = Container.template($ => ({
     skin: orangeSkin,
     contents: [
       lock,
-      container,
-      kinomaLogo,
-      until,
+      container2,
+      kinomaLogo2,
+      until2,
       // new MyButtonTemplate()
     ],
 }));
