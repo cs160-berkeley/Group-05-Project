@@ -209,20 +209,21 @@ let LockPage = Container.template($ => ({
 }));
 
 
-
-
-
-
-
 // ADDS THE REHEAT PAGE
 // application.add(new ReheatPage());
 
 // ADDS THE LOCK PAGE
 // application.add(new LockPage());
 
-
 let reheatPage = new ReheatPage(); 
 let lockPage = new LockPage();
+
+
+//**********************
+//DATE & TIME for LOCK / REHEAT
+//**********************
+
+//do the things here
 
 application.add(splash);
 
