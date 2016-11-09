@@ -72,9 +72,11 @@ let pictureTemplate = Button.template($ => ({
         onTap(button){
             if ($.text == "Reheat"){
                 application.remove(application.first);
+                reheat.string = "Reheat " + button.container.name;
                 application.add(reheatPage);
             } else if ($.text == "Lock"){
                 application.remove(application.first);
+                lock.string = "Lock " + button.container.name;
                 application.add(lockPage);
             }
         }
@@ -83,7 +85,7 @@ let pictureTemplate = Button.template($ => ({
 
 // Smart Containers
 let smartContainer = Container.template($ => ({
-    height: 60, left: 0, right: 0, top: $.top,
+    height: 60, left: 0, right: 0, top: $.top, name: $.title,
     active: true, skin: new Skin({ fill : "#eaeaea" }),
     contents: [
         new Picture({
