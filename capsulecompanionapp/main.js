@@ -11,6 +11,10 @@ let smallBlack = new Style({ font: "15px", color: "black" });
 let smallWhite = new Style({ font: "15px", color: "white" });
 let transparentSkin = new Skin({fill: "transparent"});
 
+// Background
+var backgroundTexture = new Texture("assets/background2.jpg");
+var backgroundSkin = new Skin({  width:320,  height:480,  texture: backgroundTexture,  fill:"white"});
+
 
 function hasBackButton($){
     if ($ && $.backButton){
@@ -51,10 +55,16 @@ let buttonTemplate = Button.template($ => ({
 // Splash screen for Capsule
 let splashScreen = Container.template($ => ({
     top: 0, bottom: 0, left: 0, right: 0,
-    active: true, skin: new Skin({ fill : "#191919" }),
+    active: true, skin: backgroundSkin, //skin: new Skin({ fill : "#333333" }),
     contents: [
-        new Label({top:100, string: "capsule splash page", style: smallWhite}),
-        new buttonTemplate({text: "Get Started", action: "getStarted", top: 400, bottom: 10, left: 10, right: 10, skin: new Skin({ fill: "#a181ef"}), style: smallWhite})
+        new Picture({
+            width: 320, top: -35,
+            url: "assets/logo.png",
+        }),
+        new buttonTemplate({text: "Current Capsules", action: "getStarted", top: 150, bottom: 190, left: 15, right: 165, skin: new Skin({ fill: "#ff6666"}), style: new Style({ font: "16px", color: "white" })}),
+        new buttonTemplate({text: "Sync Capsule", top: 150, bottom: 190, left: 165, right: 15, skin: new Skin({ fill: "#79cdcd"}), style: new Style({ font: "16px", color: "white" })}),
+        new buttonTemplate({text: "Unsync Capsule", top: 300, bottom: 40, left: 15, right: 165, skin: new Skin({ fill: "#79cdcd"}), style: new Style({ font: "16px", color: "white" })}),
+        new buttonTemplate({text: "Settings", top: 300, bottom: 40, left: 165, right: 15, skin: new Skin({ fill: "#ff6666"}), style: new Style({ font: "16px", color: "white" })})
     ],
 }));
 
