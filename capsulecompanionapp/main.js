@@ -33,6 +33,9 @@ var backgroundSkin = new Skin({
 let globalDate = '2016';
 let globalTime = '2:00 pm';
 
+// Keep track of which locked
+var lockedContainers = [];
+
 function hasBackButton($){
     if ($ && $.backButton){
         if ($.backToSplash){
@@ -55,17 +58,17 @@ let appHeader = Container.template($ => ({
 function buttonOnTap(action){
     if (action == 'getStarted'){ // splash -> home
         application.remove(application.first);
-        application.add(home);
+        application.add(new homeScreen());
     } else if (action == 'backToSplash'){
         application.remove(application.first);
         application.add(splash);
     }
     if (action == 'reheatConfirm'){
-    	application.remove(application.first);
+        application.remove(application.first);
         application.add(new ReheatConfirmPage({}));
     }
     if (action == 'lockConfirm'){
-    	application.remove(application.first);
+        application.remove(application.first);
         application.add(new LockConfirmPage({}));
     }
 }
@@ -118,11 +121,21 @@ let pictureTemplate = Button.template($ => ({
             } else if ($.text == "Lock"){
                 application.remove(application.first);
                 lock.string = "Lock " + button.container.name;
+                lockedContainers.push(button.container.name);
                 application.add(lockPage);
             }
         }
     }
 }));
+
+function isLockedOrUnlocked($){
+    for (var i = 0; i < lockedContainers.length; i++){
+        if (lockedContainers[i] == $.title){
+            return new pictureTemplate({name: "locked", imgExt:".png", text: "Lock", top: 10, left: 250, bottom: 30, skin: transparentSkin, width: 30}),
+        }
+    }
+    return new pictureTemplate({name: "unlocked", imgExt:".png", text: "Lock", top: 10, left: 250, bottom: 30, skin: transparentSkin, width: 30}),
+}
 
 // Smart Containers
 let smartContainer = Container.template($ => ({
@@ -137,7 +150,7 @@ let smartContainer = Container.template($ => ({
         new Label({left: 60, top:25, string: $.number, style: new Style({ font: "13px", color: "black" })}),
         new Label({left: 60, top:45, string: $.date, style: new Style({ font: "10px", color: "black" })}),
         new pictureTemplate({name: "lit", imgExt:".png", text: "Reheat", top: 10, left: 150, bottom: 30, skin: transparentSkin, width: 30}),
-        new pictureTemplate({name: "unlocked", imgExt:".png", text: "Lock", top: 10, left: 250, bottom: 30, skin: transparentSkin, width: 30}),
+        isLockedOrUnlocked($)
     ],
 }));
 
