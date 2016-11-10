@@ -5,6 +5,15 @@ import { // Imports for button behavior
     ButtonBehavior 
 } from 'buttons';
 
+import {
+    FieldScrollerBehavior,
+    FieldLabelBehavior
+} from 'field';
+
+import {
+    SystemKeyboard
+} from 'keyboard';
+
 
 // Various Styles to reuse
 let smallBlack = new Style({ font: "15px", color: "black" });
@@ -20,6 +29,9 @@ var backgroundSkin = new Skin({
   fill:"white"
 });
 
+//Global vars to hold most recently entered date + time
+let globalDate = '2016';
+let globalTime = '2:00 pm';
 
 function hasBackButton($){
     if ($ && $.backButton){
@@ -47,6 +59,14 @@ function buttonOnTap(action){
     } else if (action == 'backToSplash'){
         application.remove(application.first);
         application.add(splash);
+    }
+    if (action == 'reheatConfirm'){
+    	application.remove(application.first);
+        application.add(new ReheatConfirmPage({}));
+    }
+    if (action == 'lockConfirm'){
+    	application.remove(application.first);
+        application.add(new LockConfirmPage({}));
     }
 }
 
@@ -137,6 +157,71 @@ let homeScreen = Container.template($ => ({
 let splash = new splashScreen(); 
 let home = new homeScreen();
 
+//**
+//typeField: TYPING FIELD / KEYBOARD TEMPLATE
+//double stacked field for date/time input
+//**
+let nameInputSkin = new Skin({ borders: { left: 2, right: 2, top: 2, bottom: 2 }, stroke: 'gray' });
+let fieldStyle = new Style({ color: 'black', font: 'bold 24px', horizontal: 'left',
+    vertical: 'middle', left: 5, right: 5, top: 5, bottom: 5 });
+let fieldHintStyle = new Style({ color: '#aaa', font: '24px', horizontal: 'left',
+    vertical: 'middle', left: 5, right: 5, top: 5, bottom: 5 });
+let whiteSkin = new Skin({ fill: "white" });
+let fieldLabelSkin = new Skin({ fill: ['transparent', 'transparent', '#C0C0C0', '#acd473'] });
+
+let typeField = Column.template($ => ({ 
+    width: 200, height: 72, skin: nameInputSkin, contents: [
+        Scroller($, { 
+            left: 4, right: 4, top: 4, bottom: 4, active: true, 
+            Behavior: FieldScrollerBehavior, clip: true, 
+            contents: [
+                Label($, { 
+                    left: 0, top: 0, bottom: 0, skin: fieldLabelSkin, 
+                    style: fieldStyle, anchor: 'NAME',
+                    editable: true, string: $.name1,
+                    Behavior: class extends FieldLabelBehavior {
+                        onEdited(label) {
+                            let data = this.data;
+                            data.name = label.string;
+                            label.container.hint.visible = (data.name.length == 0);
+                            trace(data.name+"\n");
+                            globalDate = data.name;
+                        }
+                    },
+                }),
+                Label($, {
+                    left: 4, right: 4, top: 4, bottom: 4, style: fieldHintStyle,
+                    string: "mm/dd/yy", name: "hint"
+                }),
+            ]
+        }),
+        Scroller($, { 
+            left: 4, right: 4, top: 4, bottom: 4, active: true, 
+            Behavior: FieldScrollerBehavior, clip: true, 
+            contents: [
+                Label($, { 
+                    left: 0, top: 0, bottom: 0, skin: fieldLabelSkin, 
+                    style: fieldStyle, anchor: 'NAME',
+                    editable: true, string: $.name2,
+                    Behavior: class extends FieldLabelBehavior {
+                        onEdited(label) {
+                            let data = this.data;
+                            data.name = label.string;
+                            label.container.hint.visible = (data.name.length == 0);
+                            trace(data.name+"\n");
+                            globalTime = data.name;
+                        }
+                    },
+                }),
+                Label($, {
+                    left: 4, right: 4, top: 4, bottom: 4, style: fieldHintStyle,
+                    string: "time (ex: 2:00 pm)", name: "hint"
+                }),
+            ]
+        })
+    ]
+}));
+
 // REHEAT PAGE
 
 var labelStyle = new Style( { font: "bold 25px", color:"black" } );
@@ -155,36 +240,54 @@ skin: new Skin({ fill: "black" })
 let kinomaLogo = new Picture({height: 90, url: "assets/lasagna.jpg"});
 kinomaLogo.coordinates = {height: 110, left: 0, right:0, top: 105, width: 100};
 
-var ready = new Label({name: "ready", left:0, right: 120, top:280, height:20, string:"Ready by:", style: labelStyle2});
+var ready = new Label({name: "ready", left:0, right: 120, top:180, height:20, string:"Ready by:", style: labelStyle2});
 
 // var date = new Label({name: "date", left:0, right: 30, top:340, height:20, string:"Date:", style: labelStyle3});
 
-// Reheat button
-let MyButtonTemplate = Button.template($ => ({
-    top: 310, left: 0, right: 0,
+// Reheat button template
+let myButtonTemplate = Button.template($ => ({
+    top: 200, left: 50, right: 50,
     contents: [
-        Label($, {left: 0, right: 0, height: 14, string: "Reheat", style: bigText})
+        Label($, {height: 14, string: "Reheat", style: bigText})
     ],
-    Behavior: class extends ButtonBehavior {
-        onTap(button){
-        }
-    }
 }));
 
 let ReheatPage = Container.template($ => ({
     top: 0, bottom: 0, left: 0, right: 0,
-    skin: orangeSkin,
+    skin: orangeSkin, active: true,
     contents: [
       new appHeader({backButton: "back"}),
       reheat,
       container,
       kinomaLogo,
       ready,
-      // new MyButtonTemplate()
+      new typeField({name1: "11/10/16", name2: "2:30 pm"}),
+      new buttonTemplate({text: "Reheat", action: "reheatConfirm", top: 330, bottom: 100, left: 50, right: 50, skin: new Skin({ fill: "#a181ef"}), style: smallWhite})
     ],
+    Behavior: class extends Behavior { //
+        onTouchEnded(content) {
+            SystemKeyboard.hide();
+            content.focus();
+        }
+    }
 }));
 
+//New: reheating lock page
 
+let ReheatConfirmPage = Container.template($ => ({
+    top: 0, bottom: 0, left: 0, right: 0,
+    skin: orangeSkin, active: true,
+    contents: [
+      new Label({name: "ready", left:0, right: 0, top:180, height:20, string:"Reheat set: " + globalDate + ", " + globalTime, style: labelStyle2}),
+      new buttonTemplate({text: "Ok", action: "getStarted", top: 330, bottom: 100, left: 50, right: 50, skin: new Skin({ fill: "#a181ef"}), style: smallWhite})
+    ],
+    Behavior: class extends Behavior { //
+        onTouchEnded(content) {
+            SystemKeyboard.hide();
+            content.focus();
+        }
+    }
+}));
 
 
 
@@ -202,7 +305,7 @@ skin: new Skin({ fill: "black" })
 let kinomaLogo2 = new Picture({height: 90, url: "assets/avocado.jpg"});
 kinomaLogo2.coordinates = {height: 110, left: 0, right:0, top: 105, width: 100};
 
-var until2 = new Label({name: "until", left:0, right: 120, top:280, height:20, string:"Lock until:", style: labelStyle2});
+var until2 = new Label({name: "until", left:0, right: 120, top:180, height:20, string:"Lock until:", style: labelStyle2});
 
 // var date = new Label({name: "date", left:0, right: 30, top:340, height:20, string:"Date:", style: labelStyle3});
 
@@ -227,11 +330,34 @@ let LockPage = Container.template($ => ({
       container2,
       kinomaLogo2,
       until2,
+      new typeField({name1: "11/10/16", name2: "2:30 pm"}),
+      new buttonTemplate({text: "Lock", action: "lockConfirm", top: 330, bottom: 100, left: 50, right: 50, skin: new Skin({ fill: "#a181ef"}), style: smallWhite})
       // new MyButtonTemplate()
     ],
+    Behavior: class extends Behavior { //
+        onTouchEnded(content) {
+            SystemKeyboard.hide();
+            content.focus();
+        }
+    }
 }));
 
+//New: confirm lock page
 
+let LockConfirmPage = Container.template($ => ({
+    top: 0, bottom: 0, left: 0, right: 0,
+    skin: orangeSkin, active: true,
+    contents: [
+      new Label({name: "ready", left:0, right: 0, top:180, height:20, string:"Locked until: " + globalDate + ", " + globalTime, style: labelStyle2}),
+      new buttonTemplate({text: "Ok", action: "getStarted", top: 330, bottom: 100, left: 50, right: 50, skin: new Skin({ fill: "#a181ef"}), style: smallWhite})
+    ],
+    Behavior: class extends Behavior { //
+        onTouchEnded(content) {
+            SystemKeyboard.hide();
+            content.focus();
+        }
+    }
+}));
 
 
 
