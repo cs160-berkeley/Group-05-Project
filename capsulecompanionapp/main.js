@@ -32,7 +32,7 @@ function hasBackButton($){
 // Container for the app header
 let appHeader = Container.template($ => ({
     left: 0, right: 0, top: 0, height: 40,
-    skin: new Skin({ fill : "#a181ef" }), style: smallBlack, 
+    skin: new Skin({ fill: "#ff6666"}), style: smallBlack, 
     contents: [
         hasBackButton($),
         new Label({top:12, string: "capsule" }),
