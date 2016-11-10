@@ -13,11 +13,19 @@ let transparentSkin = new Skin({fill: "transparent"});
 
 // Background
 var backgroundTexture = new Texture("assets/background2.jpg");
-var backgroundSkin = new Skin({  width:320,  height:480,  texture: backgroundTexture,  fill:"white"});
+var backgroundSkin = new Skin({
+  width:320,
+  height:480,
+  texture: backgroundTexture,
+  fill:"white"
+});
 
 
 function hasBackButton($){
     if ($ && $.backButton){
+        if ($.backToSplash){
+            return new buttonTemplate({text: $.backButton, action: 'backToSplash', top: 0, bottom: 0, left: 10, right: 250, skin: transparentSkin, style: smallWhite}),
+        }
         return new buttonTemplate({text: $.backButton, action: 'getStarted', top: 0, bottom: 0, left: 10, right: 250, skin: transparentSkin, style: smallWhite}),
     }
 }
@@ -36,6 +44,9 @@ function buttonOnTap(action){
     if (action == 'getStarted'){ // splash -> home
         application.remove(application.first);
         application.add(home);
+    } else if (action == 'backToSplash'){
+        application.remove(application.first);
+        application.add(splash);
     }
 }
 
@@ -115,7 +126,7 @@ let homeScreen = Container.template($ => ({
     top: 0, bottom: 0, left: 0, right: 0,
     active: true, skin: new Skin({ fill : "#fafafa" }),
     contents: [
-        new appHeader(),
+        new appHeader({backButton: "back", backToSplash: true}),
         new smartContainer({title: "My Avocado Container", number: "#2", date: "10/17/16", top: 50}),
         new smartContainer({title: "Lasagna Container", number: "#3", date: "10/14/16", top: 120}),
         new smartContainer({title: "Fruits", number: "#5", date: "10/15/16", top: 190}),
