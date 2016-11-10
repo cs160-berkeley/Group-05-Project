@@ -223,7 +223,7 @@ let lockPage = new LockPage();
 //DATE & TIME for LOCK / REHEAT
 //**********************
 
-//do the things here
+let App
 
 application.add(splash);
 
