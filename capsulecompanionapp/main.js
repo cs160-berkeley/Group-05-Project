@@ -24,9 +24,9 @@ var backgroundSkin = new Skin({
 function hasBackButton($){
     if ($ && $.backButton){
         if ($.backToSplash){
-            return new buttonTemplate({text: $.backButton, action: 'backToSplash', top: 0, bottom: 0, left: 10, right: 250, skin: transparentSkin, style: smallWhite}),
+            return new buttonTemplate({text: $.backButton, action: 'backToSplash', top: 0, bottom: 0, left: 10, right: 250, skin: transparentSkin, style: smallBlack}),
         }
-        return new buttonTemplate({text: $.backButton, action: 'getStarted', top: 0, bottom: 0, left: 10, right: 250, skin: transparentSkin, style: smallWhite}),
+        return new buttonTemplate({text: $.backButton, action: 'getStarted', top: 0, bottom: 0, left: 10, right: 250, skin: transparentSkin, style: smallBlack}),
     }
 }
 // Container for the app header
@@ -75,7 +75,7 @@ let splashScreen = Container.template($ => ({
         new buttonTemplate({text: "Current Capsules", action: "getStarted", top: 150, bottom: 190, left: 15, right: 165, skin: new Skin({ fill: "#ff6666"}), style: new Style({ font: "16px", color: "white" })}),
         new buttonTemplate({text: "Sync Capsule", top: 150, bottom: 190, left: 165, right: 15, skin: new Skin({ fill: "#79cdcd"}), style: new Style({ font: "16px", color: "white" })}),
         new buttonTemplate({text: "Unsync Capsule", top: 300, bottom: 40, left: 15, right: 165, skin: new Skin({ fill: "#79cdcd"}), style: new Style({ font: "16px", color: "white" })}),
-        new buttonTemplate({text: "Settings", top: 300, bottom: 40, left: 165, right: 15, skin: new Skin({ fill: "#ff6666"}), style: new Style({ font: "16px", color: "white" })})
+        new buttonTemplate({text: "Add Food", top: 300, bottom: 40, left: 165, right: 15, skin: new Skin({ fill: "#ff6666"}), style: new Style({ font: "16px", color: "white" })})
     ],
 }));
 
