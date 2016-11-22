@@ -15,6 +15,7 @@ import {
 } from 'keyboard';
 
 
+
 // Various Styles to reuse
 let smallBlack = new Style({ font: "15px", color: "black" });
 let smallWhite = new Style({ font: "15px", color: "white" });
@@ -35,6 +36,7 @@ let globalTime = '2:00 pm';
 
 // Keep track of which locked
 var lockedContainers = [];
+var foodContainersCreated = [];
 
 function hasBackButton($){
     if ($ && $.backButton){
@@ -71,6 +73,15 @@ function buttonOnTap(action){
         application.remove(application.first);
         application.add(new LockConfirmPage({}));
     }
+    if (action == 'addFood'){
+        application.remove(application.first);
+        application.add(new foodPage());
+    }
+    if (action == 'confirmFood'){
+        foodContainersCreated.push(1);
+        application.remove(application.first);
+        application.add(new homeScreen());
+    }
 }
 
 // Reusable button template for the app
@@ -98,7 +109,7 @@ let splashScreen = Container.template($ => ({
         new buttonTemplate({text: "Current Capsules", action: "getStarted", top: 150, bottom: 190, left: 15, right: 165, skin: new Skin({ fill: "#ff6666"}), style: new Style({ font: "16px", color: "white" })}),
         new buttonTemplate({text: "Sync Capsule", top: 150, bottom: 190, left: 165, right: 15, skin: new Skin({ fill: "#79cdcd"}), style: new Style({ font: "16px", color: "white" })}),
         new buttonTemplate({text: "Unsync Capsule", top: 300, bottom: 40, left: 15, right: 165, skin: new Skin({ fill: "#79cdcd"}), style: new Style({ font: "16px", color: "white" })}),
-        new buttonTemplate({text: "Add Food", top: 300, bottom: 40, left: 165, right: 15, skin: new Skin({ fill: "#ff6666"}), style: new Style({ font: "16px", color: "white" })})
+        new buttonTemplate({text: "Add Food", action: "addFood", top: 300, bottom: 40, left: 165, right: 15, skin: new Skin({ fill: "#ff6666"}), style: new Style({ font: "16px", color: "white" })})
     ],
 }));
 
@@ -154,17 +165,26 @@ let smartContainer = Container.template($ => ({
     ],
 }));
 
-// App homescreen
-let homeScreen = Container.template($ => ({
-    top: 0, bottom: 0, left: 0, right: 0,
-    active: true, skin: new Skin({ fill : "#fafafa" }),
-    contents: [
+function foodContainers(){
+    var ret = [
         new appHeader({backButton: "back", backToSplash: true}),
         new smartContainer({title: "My Avocado Container", number: "#2", date: "10/17/16", top: 50}),
         new smartContainer({title: "Lasagna Container", number: "#3", date: "10/14/16", top: 120}),
         new smartContainer({title: "Fruits", number: "#5", date: "10/15/16", top: 190}),
         new smartContainer({title: "Vegetables", number: "#4", date: "10/16/16", top: 260}),
-    ],
+    ]
+    var top = 260;
+    for (var i = 0; i < foodContainersCreated.length; i++){
+        top += 70;
+        ret.push(new smartContainer({title: "Vegetables", number: "#4", date: "10/16/16", top: top}))
+    }
+    return ret;
+}
+// App homescreen
+let homeScreen = Container.template($ => ({
+    top: 0, bottom: 0, left: 0, right: 0,
+    active: true, skin: new Skin({ fill : "#fafafa" }),
+    contents: foodContainers(),
 }));
 
 let splash = new splashScreen(); 
@@ -373,8 +393,22 @@ let LockConfirmPage = Container.template($ => ({
 }));
 
 
-
-
+//Add food page
+let foodPage = Container.template($ => ({
+    top: 0, bottom: 0, left: 0, right: 0,
+    skin: orangeSkin,
+    contents: [
+      new appHeader({backButton: "back"}),
+      new typeField({name1: "Name", name2: "Container #"}),
+      new buttonTemplate({text: "Add Food", action: "confirmFood", top: 330, bottom: 100, left: 50, right: 50, skin: new Skin({ fill: "#a181ef"}), style: smallWhite})
+    ],
+    Behavior: class extends Behavior { //
+        onTouchEnded(content) {
+            SystemKeyboard.hide();
+            content.focus();
+        }
+    }
+}));
 
 // ADDS THE REHEAT PAGE
 // application.add(new ReheatPage());
