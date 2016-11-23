@@ -78,7 +78,7 @@ function buttonOnTap(action){
         application.add(new foodPage());
     }
     if (action == 'confirmFood'){
-        foodContainersCreated.push(1);
+        foodContainersCreated.push({title : globalDate, number: globalTime});
         application.remove(application.first);
         application.add(new homeScreen());
     }
@@ -176,7 +176,7 @@ function foodContainers(){
     var top = 260;
     for (var i = 0; i < foodContainersCreated.length; i++){
         top += 70;
-        ret.push(new smartContainer({title: "Vegetables", number: "#4", date: "10/16/16", top: top}))
+        ret.push(new smartContainer({title: foodContainersCreated[i].title, number: "#" + foodContainersCreated[i].number, date: "10/16/16", top: top}))
     }
     return ret;
 }
@@ -224,7 +224,7 @@ let typeField = Column.template($ => ({
                 }),
                 Label($, {
                     left: 4, right: 4, top: 4, bottom: 4, style: fieldHintStyle,
-                    string: "mm/dd/yy", name: "hint"
+                    string: $.placeholder1, name: "hint"
                 }),
             ]
         }),
@@ -248,7 +248,7 @@ let typeField = Column.template($ => ({
                 }),
                 Label($, {
                     left: 4, right: 4, top: 4, bottom: 4, style: fieldHintStyle,
-                    string: "time (ex: 2:00 pm)", name: "hint"
+                    string: $.placeholder2, name: "hint"
                 }),
             ]
         })
@@ -294,7 +294,7 @@ let ReheatPage = Container.template($ => ({
       container,
       kinomaLogo,
       ready,
-      new typeField({name1: "11/10/16", name2: "2:30 pm"}),
+      new typeField({name1: "11/10/16", name2: "2:30 pm", placeholder1: "mm/dd/yy", placeholder2: "time (ex: 2:00 pm)"}),
       new buttonTemplate({text: "Reheat", action: "reheatConfirm", top: 330, bottom: 100, left: 50, right: 50, skin: new Skin({ fill: "#a181ef"}), style: smallWhite})
     ],
     Behavior: class extends Behavior { //
@@ -363,7 +363,7 @@ let LockPage = Container.template($ => ({
       container2,
       kinomaLogo2,
       until2,
-      new typeField({name1: "11/10/16", name2: "2:30 pm"}),
+      new typeField({name1: "11/10/16", name2: "2:30 pm", placeholder1: "mm/dd/yy", placeholder2: "time (ex: 2:00 pm)"}),
       new buttonTemplate({text: "Lock", action: "lockConfirm", top: 330, bottom: 100, left: 50, right: 50, skin: new Skin({ fill: "#a181ef"}), style: smallWhite})
       // new MyButtonTemplate()
     ],
@@ -399,7 +399,7 @@ let foodPage = Container.template($ => ({
     skin: orangeSkin,
     contents: [
       new appHeader({backButton: "back"}),
-      new typeField({name1: "Name", name2: "Container #"}),
+      new typeField({name1: "", name2: "", placeholder1: "Descriptive Name", placeholder2: "Container #..."}),
       new buttonTemplate({text: "Add Food", action: "confirmFood", top: 330, bottom: 100, left: 50, right: 50, skin: new Skin({ fill: "#a181ef"}), style: smallWhite})
     ],
     Behavior: class extends Behavior { //
