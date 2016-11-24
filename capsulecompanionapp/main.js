@@ -97,6 +97,7 @@ let buttonTemplate = Button.template($ => ({
     }
 }));
 
+
 // Splash screen for Capsule
 let splashScreen = Container.template($ => ({
     top: 0, bottom: 0, left: 0, right: 0,
@@ -139,6 +140,12 @@ let pictureTemplate = Button.template($ => ({
     }
 }));
 
+let containerDetailScreen = Container.template($ => ({
+    top: 0, bottom: 0, left: 0, right: 0,
+    active: true, skin: new Skin({ fill : "#fafafa" }),
+    contents: $.content,
+})); 
+
 function isLockedOrUnlocked($){
     for (var i = 0; i < lockedContainers.length; i++){
         if (lockedContainers[i] == $.title){
@@ -148,11 +155,22 @@ function isLockedOrUnlocked($){
     return new pictureTemplate({name: "unlocked", imgExt:".png", text: "Lock", top: 10, left: 250, bottom: 30, skin: transparentSkin, width: 30}),
 }
 
-// Smart Containers
-let smartContainer = Container.template($ => ({
-    height: 60, left: 0, right: 0, top: $.top, name: $.title,
-    active: true, skin: new Skin({ fill : "#eaeaea" }),
-    contents: [
+function viewTapped(containerTitle, number, date){
+    application.remove(application.first);
+    application.add(new containerDetailScreen({
+        content:[
+            new appHeader({backButton: "back", backToSplash: false}),
+            new Label({top:100, string: containerTitle, style: smallBlack}),
+            new Label({top:150, string: number, style: smallBlack}),
+            new Label({top:200, string: date, style: smallBlack}),
+            new Label({top:250, string: "Food is Fresh!", style: new Style({ font: "20px", color: "green" })}),
+        ]
+    }));
+}
+
+let viewContainer = Button.template($ => ({
+    height: 60, left:0, right: 110, skin: new Skin({ fill : "transparent" }),
+    contents:[
         new Picture({
             width: 50, left: 5,
             url: "assets/imgplaceholder.jpg",
@@ -160,6 +178,20 @@ let smartContainer = Container.template($ => ({
         new Label({left: 60, top:10, string: $.title, style: smallBlack}),
         new Label({left: 60, top:25, string: $.number, style: new Style({ font: "13px", color: "black" })}),
         new Label({left: 60, top:45, string: $.date, style: new Style({ font: "10px", color: "black" })}),
+    ],
+    Behavior: class extends ButtonBehavior {
+        onTap(button){
+            viewTapped($.title, $.number, $.date);
+        }
+    }
+}));
+
+// Smart Containers
+let smartContainer = Container.template($ => ({
+    height: 60, left: 0, right: 0, top: $.top, name: $.title,
+    active: true, skin: new Skin({ fill : "#eaeaea" }),
+    contents: [
+        new viewContainer({title: $.title, number: $.number, date: $.date}),
         new pictureTemplate({name: "lit", imgExt:".png", text: "Reheat", top: 10, left: 150, bottom: 30, skin: transparentSkin, width: 30}),
         isLockedOrUnlocked($)
     ],
