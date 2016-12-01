@@ -36,6 +36,7 @@ let globalTime = '2:00 pm';
 
 // Keep track of which locked
 var lockedContainers = [];
+var curContainer = null;
 var foodContainersCreated = [];
 
 function hasBackButton($){
@@ -61,7 +62,13 @@ function buttonOnTap(action){
     if (action == 'getStarted'){ // splash -> home
         application.remove(application.first);
         application.add(new homeScreen());
-    } else if (action == 'backToSplash'){
+    }
+    if (action == 'addLockAndGoHome'){
+        lockedContainers.push({title: curContainer, date: globalDate, time: globalTime});
+        application.remove(application.first);
+        application.add(new homeScreen());
+    }
+    if (action == 'backToSplash'){
         application.remove(application.first);
         application.add(splash);
     }
@@ -114,6 +121,20 @@ let splashScreen = Container.template($ => ({
     ],
 }));
 
+function ifPictureHasTime($){
+    if ($.time){
+        return new Label({string: $.time, top: 40, style: new Style({ font: "10px", color: "black" })})
+    }
+}
+
+function isContainerLocked(name){
+    for (var i = 0; i < lockedContainers.length; i++){
+        var cont = lockedContainers[i];
+        if (cont.title == name) { return true; }
+    }
+    return false;
+}
+
 // Picture template for the Image buttons
 let pictureTemplate = Button.template($ => ({
     top: $.top, bottom: $.bottom, left: $.left, right: 10, skin: $.skin, name: $.name + "Button",
@@ -122,18 +143,21 @@ let pictureTemplate = Button.template($ => ({
             width: $.width, 
             url: "assets/" + $.name + $.imgExt,
         }),
-        new Label({string: $.text, top: 30, style: new Style({ font: "13px", color: "black" })})
+        new Label({string: $.text, top: 30, style: new Style({ font: "13px", color: "black" })}),
+        ifPictureHasTime($)
     ],
     Behavior: class extends ButtonBehavior {
         onTap(button){
             if ($.text == "Reheat"){
-                application.remove(application.first);
-                reheat.string = "Reheat " + button.container.name;
-                application.add(reheatPage);
+                if (!isContainerLocked(button.container.name)){
+                    application.remove(application.first);
+                    reheat.string = "Reheat " + button.container.name;
+                    application.add(reheatPage);
+                }
             } else if ($.text == "Lock"){
                 application.remove(application.first);
                 lock.string = "Lock " + button.container.name;
-                lockedContainers.push(button.container.name);
+                curContainer = button.container.name;
                 application.add(lockPage);
             }
         }
@@ -148,11 +172,12 @@ let containerDetailScreen = Container.template($ => ({
 
 function isLockedOrUnlocked($){
     for (var i = 0; i < lockedContainers.length; i++){
-        if (lockedContainers[i] == $.title){
-            return new pictureTemplate({name: "locked", imgExt:".png", text: "Lock", top: 10, left: 250, bottom: 30, skin: transparentSkin, width: 30}),
+        var cont = lockedContainers[i];
+        if (cont.title == $.title){
+            return new pictureTemplate({name: "locked", imgExt:".png", text: cont.date, time: cont.time, top: 10, left: 250, bottom: 30, skin: transparentSkin, width: 30}),
         }
     }
-    return new pictureTemplate({name: "unlocked", imgExt:".png", text: "Lock", top: 10, left: 250, bottom: 30, skin: transparentSkin, width: 30}),
+    return new pictureTemplate({name: "unlocked", imgExt:".png", text: "Lock", time: "", top: 10, left: 250, bottom: 30, skin: transparentSkin, width: 30}),
 }
 
 function viewTapped(containerTitle, number, date){
@@ -188,7 +213,7 @@ let viewContainer = Button.template($ => ({
 
 // Smart Containers
 let smartContainer = Container.template($ => ({
-    height: 60, left: 0, right: 0, top: $.top, name: $.title,
+    height: 65, left: 0, right: 0, top: $.top, name: $.title,
     active: true, skin: new Skin({ fill : "#eaeaea" }),
     contents: [
         new viewContainer({title: $.title, number: $.number, date: $.date}),
@@ -414,7 +439,7 @@ let LockConfirmPage = Container.template($ => ({
     skin: orangeSkin, active: true,
     contents: [
       new Label({name: "ready", left:0, right: 0, top:180, height:20, string:"Locked until: " + globalDate + ", " + globalTime, style: labelStyle2}),
-      new buttonTemplate({text: "Ok", action: "getStarted", top: 330, bottom: 100, left: 50, right: 50, skin: new Skin({ fill: "#a181ef"}), style: smallWhite})
+      new buttonTemplate({text: "Ok", action: "addLockAndGoHome", top: 330, bottom: 100, left: 50, right: 50, skin: new Skin({ fill: "#a181ef"}), style: smallWhite})
     ],
     Behavior: class extends Behavior { //
         onTouchEnded(content) {
