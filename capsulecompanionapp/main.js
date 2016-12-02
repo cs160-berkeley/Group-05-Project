@@ -91,6 +91,12 @@ function buttonOnTap(action){
     }
 }
 
+function customButtonBehavior($){
+}
+
+
+var prevSkin;
+
 // Reusable button template for the app
 let buttonTemplate = Button.template($ => ({
     top: $.top, bottom: $.bottom, left: $.left, right: $.right, skin: $.skin,
@@ -98,16 +104,24 @@ let buttonTemplate = Button.template($ => ({
         Label($, { name: $.name , top: 0, bottom: 0, left: 0, right: 0, style: $.style, string: $.text })
     ],
     Behavior: class extends ButtonBehavior {
-        onTap(button){
-            buttonOnTap($.action);
-        }
+    	onTouchBegan(button) {
+    		if (button.container.name == "splashScreen") {
+    			prevSkin = button.skin;
+    			button.skin = new Skin({fill : "black"});
+    		}
+    		
+    	}
+    	onTouchEnded(button) {
+    		button.skin = prevSkin;
+    		buttonOnTap($.action);
+    	}
     }
 }));
 
 
 // Splash screen for Capsule
 let splashScreen = Container.template($ => ({
-    top: 0, bottom: 0, left: 0, right: 0,
+    top: 0, bottom: 0, left: 0, right: 0, name: "splashScreen",
     active: true, skin: backgroundSkin, //skin: new Skin({ fill : "#333333" }),
     contents: [
         new Picture({
