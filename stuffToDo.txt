@@ -1,0 +1,10 @@
+STUFF TO DO!!
+Stina - Presentation Slides and Poster stuff
+ 
+Ankit - Device/pin application, sync and unsync 
+
+Ryan - Demo, UI improvement (picture)
+
+Hope - KEYBOARD THINgs, incubate stuff
+ 
+Ali - Scroller for container page, 
