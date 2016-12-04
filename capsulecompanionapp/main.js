@@ -37,6 +37,9 @@ let globalTime = '2:00 pm';
 // Keep track of which locked
 var lockedContainers = [];
 var curContainer = null;
+var curContainerNumber;
+var curContainerDate;
+var curContainerFoodStatus = 'Fresh';
 var foodContainersCreated = [];
 var foodContainersStatus = [
     {title: "Avocados", status: "fresh"}, 
@@ -102,10 +105,6 @@ function buttonOnTap(action){
         application.add(new homeScreen());
     }
 }
-
-function customButtonBehavior($){
-}
-
 
 var prevSkin;
 
@@ -206,15 +205,23 @@ function isLockedOrUnlocked($){
     return new pictureTemplate({name: "unlocked", imgExt:".png", text: "Lock", time: "", top: 10, left: 250, bottom: 30, skin: transparentSkin, width: 30}),
 }
 
-function viewTapped(containerTitle, number, date){
+function viewTapped(){
     application.remove(application.first);
+    var color;
+    if (curContainerFoodStatus == "Fresh"){
+        color = "green";
+    } else if (curContainerFoodStatus == "Edible"){
+        color = "yellow";
+    } else{
+        color = "red";
+    }
     application.add(new containerDetailScreen({
         content:[
             new appHeader({backButton: "back", backToSplash: false}),
-            new Label({top:100, string: containerTitle, style: smallBlack}),
-            new Label({top:150, string: number, style: smallBlack}),
-            new Label({top:200, string: date, style: smallBlack}),
-            new Label({top:250, string: "Food is Fresh!", style: new Style({ font: "20px", color: "green" })}),
+            new Label({top:100, string: curContainer, style: smallBlack}),
+            new Label({top:150, string: curContainerNumber, style: smallBlack}),
+            new Label({top:200, string: curContainerDate, style: smallBlack}),
+            new Label({top:250, string: "Food is " + curContainerFoodStatus + "!", style: new Style({ font: "20px", color: color })}),
         ]
     }));
 }
@@ -232,7 +239,10 @@ let viewContainer = Button.template($ => ({
     ],
     Behavior: class extends ButtonBehavior {
         onTap(button){
-            viewTapped($.title, $.number, $.date);
+            curContainerNumber = $.number;
+            curContainerDate = $.date;
+            curContainer = $.title;
+            viewTapped();
         }
     }
 }));
@@ -527,8 +537,14 @@ class AppBehavior extends Behavior {
                     remotePins = Pins.connect(connectionDesc);
                     remotePins.repeat("/led2/read", 50, function(result) {
                        if (result == 0.3) {
+                        curContainerFoodStatus = "Edible";
+                        if (curContainer) viewTapped();
                        } else if (result == 0.5){
+                        curContainerFoodStatus = "Spoiled";
+                        if (curContainer) viewTapped();
                        } else if (result == 0.7){
+                        curContainerFoodStatus = "Fresh";
+                        if (curContainer) viewTapped();
                        }
                     });
                     

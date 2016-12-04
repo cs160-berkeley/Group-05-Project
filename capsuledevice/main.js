@@ -16,24 +16,28 @@ var odd = true;
 var currentContainer = "Avocados";
 var globalStatus = "unlocked";
 
+// Needed for cross-device handlers
+var deviceURL = '';
+
 // Controls behavior of all buttons
 function buttonOnTap(type){
     if (type == "sendOK"){
+        var payload = {title: currentContainer};
         application.distribute('onButtonPress', 0.3);
     }
     if (type == "sendBad"){
         application.distribute('onButtonPress', 0.5);
     }
-    if (type == "sendGood"){
+    if (type == "sendFresh"){
         application.distribute('onButtonPress', 0.7);
     }
     if (type == "viewFood"){
-    	application.remove(application.first);
+        application.remove(application.first);
         application.add(new containerList());
     }
 
     if (type == "getStarted"){
-    	application.remove(application.first);
+        application.remove(application.first);
         application.add(new MainContainer({ string: "Ready!", backgroundColor: "#2e2e2e" }));
     }
 
@@ -55,7 +59,7 @@ let buttonTemplate = Button.template($ => ({
     ],
     Behavior: class extends ButtonBehavior {
         onTap(button){
-        	buttonOnTap($.action);
+            buttonOnTap($.action);
         }
     }
 }));
@@ -70,11 +74,11 @@ let hungerLevel = Container.template($ => ({
 
 // Info about the food. Locked/Unlocked or reheating.
 function getStatus($){
-	if ($.status){
-		return Label($, { string: $.status, style: smallStyle }),
-	} else{
-		return Label($, { string: globalStats, style: smallStyle }),
-	}
+    if ($.status){
+        return Label($, { string: $.status, style: smallStyle }),
+    } else{
+        return Label($, { string: globalStats, style: smallStyle }),
+    }
 }
 
 let infoContainer = Button.template($ => ({
@@ -107,7 +111,7 @@ let MainContainer = Container.template($ => ({
         new Label({top:102, string: "Capsule (add logo)", style:textStyle }),
         new buttonTemplate({name: "sendBad", action: "sendBad", text: "Spoiled", top: 180, bottom: 10, left: 10, right: 220, skin: new Skin({fill: "red"}), style: smallerComicStyle}),
         new buttonTemplate({name: "sendOK", action: "sendOK", text: "Edible", top: 180, bottom: 10, left: 120, right: 120, skin: new Skin({fill: "yellow"}), style: smallerComicStyle}),
-        new buttonTemplate({name: "sendGood", action: "sendGood", text: "Good", top: 180, bottom: 10, left: 220, right: 10, skin: new Skin({fill: "green"}), style: smallerComicStyle}),
+        new buttonTemplate({name: "sendFresh", action: "sendFresh", text: "Fresh", top: 180, bottom: 10, left: 220, right: 10, skin: new Skin({fill: "green"}), style: smallerComicStyle}),
     ],
 }));
 
@@ -124,10 +128,10 @@ let viewContainer = Button.template($ => ({
     ],
     Behavior: class extends ButtonBehavior {
         onTap(button){
-        	currentContainer = button.name;
+            currentContainer = button.name;
             globalStatus = "unlocked";
-        	application.remove(application.first);
-        	application.add(new MainContainer({ string: "Ready!", backgroundColor: "#2e2e2e" }));
+            application.remove(application.first);
+            application.add(new MainContainer({ string: "Ready!", backgroundColor: "#2e2e2e" }));
         }
     }
 }));
@@ -171,8 +175,8 @@ let containerList = Container.template($ => ({
     top: 0, bottom: 0, left: 0, right: 0,
     active: true, skin: new Skin({ fill : "#fafafa" }),
     contents: [
-    	new appHeader({backButton: "back"}),
-    	foodContainers(),
+        new appHeader({backButton: "back"}),
+        foodContainers(),
     ]
 }));
 
@@ -184,14 +188,14 @@ Handler.bind("/setTimeout", {
 });
 
 let setTimeout = function(callback, duration) {
-	new MessageWithObject("/setTimeout", {duration}).invoke().then(() => {
-		callback();
-	});
+    new MessageWithObject("/setTimeout", {duration}).invoke().then(() => {
+        callback();
+    });
 }
 
 function removeNotification(){
-	application.remove(sentLabel);
-	application.distribute('onButtonPress', 0);
+    application.remove(sentLabel);
+    application.distribute('onButtonPress', 0);
 }
 
 // Configure all Pins in the AppBehavior and set up functionality
@@ -201,7 +205,7 @@ class AppBehavior extends Behavior {
             led: {
                 require: "Digital", // use built-in digital BLL
                 pins: {
-                    ground: { pin: 51, type: "Ground" },		
+                    ground: { pin: 51, type: "Ground" },        
                     digital: { pin: 52, direction: "output" },
                 }
             },
@@ -218,13 +222,13 @@ class AppBehavior extends Behavior {
                 application.add(new MainContainer({ string: "Ready!", backgroundColor: "#2e2e2e" }));
                 Pins.repeat("/led/read", 500, value => {
                     if (value == 0.5){
-                    	application.remove(application.first);
+                        application.remove(application.first);
                         globalStatus = "locked";
-                		application.add(new MainContainer({ string: "Ready!", backgroundColor: "#2e2e2e", status: "locked" }));
+                        application.add(new MainContainer({ string: "Ready!", backgroundColor: "#2e2e2e", status: "locked" }));
                     } else if (value == 0.7){
                         application.remove(application.first);
                         globalStatus = "reheated";
-                		application.add(new MainContainer({ string: "Ready!", backgroundColor: "#2e2e2e", status: "reheated" }));
+                        application.add(new MainContainer({ string: "Ready!", backgroundColor: "#2e2e2e", status: "reheated" }));
                     }
                 });
             } else {
@@ -235,8 +239,8 @@ class AppBehavior extends Behavior {
     onButtonPress(application, value){
         trace("Writing value: " + value + "\n");
         if (value != 0){
-        	application.add(sentLabel);
-        	setTimeout(removeNotification, 2000);
+            application.add(sentLabel);
+            setTimeout(removeNotification, 2000);
         }
         Pins.invoke("/led2/write", value);
     }
