@@ -38,6 +38,12 @@ let globalTime = '2:00 pm';
 var lockedContainers = [];
 var curContainer = null;
 var foodContainersCreated = [];
+var foodContainersStatus = [
+    {title: "Avocados", status: "fresh"}, 
+    {title: "Lasagna", status: "fresh"}, 
+    {title: "Fruits", status: "fresh"}, 
+    {title: "Vegetables", status: "fresh"}
+];
 
 function hasBackButton($){
     if ($ && $.backButton){
@@ -65,6 +71,12 @@ function buttonOnTap(action){
     }
     if (action == 'addLockAndGoHome'){
         lockedContainers.push({title: curContainer, date: globalDate, time: globalTime});
+        application.distribute('onLockorReheatContainer', 0.5);
+        application.remove(application.first);
+        application.add(new homeScreen());
+    }
+    if (action == 'reheatAndGoHome'){
+        application.distribute('onLockorReheatContainer', 0.7);
         application.remove(application.first);
         application.add(new homeScreen());
     }
@@ -104,17 +116,17 @@ let buttonTemplate = Button.template($ => ({
         Label($, { name: $.name , top: 0, bottom: 0, left: 0, right: 0, style: $.style, string: $.text })
     ],
     Behavior: class extends ButtonBehavior {
-    	onTouchBegan(button) {
-    		if (button.container.name == "splashScreen") {
-    			prevSkin = button.skin;
-    			button.skin = new Skin({fill : "black"});
-    		}
-    		
-    	}
-    	onTouchEnded(button) {
-    		button.skin = prevSkin;
-    		buttonOnTap($.action);
-    	}
+        onTouchBegan(button) {
+            if (button.container.name == "splashScreen") {
+                prevSkin = button.skin;
+                button.skin = new Skin({fill : "black"});
+            }
+            
+        }
+        onTouchEnded(button) {
+            button.skin = prevSkin;
+            buttonOnTap($.action);
+        }
     }
 }));
 
@@ -239,8 +251,8 @@ let smartContainer = Container.template($ => ({
 function foodContainers(){
     var ret = [
         new appHeader({backButton: "back", backToSplash: true}),
-        new smartContainer({title: "My Avocado Container", number: "#2", date: "10/17/16", top: 50}),
-        new smartContainer({title: "Lasagna Container", number: "#3", date: "10/14/16", top: 120}),
+        new smartContainer({title: "Avocados", number: "#2", date: "10/17/16", top: 50}),
+        new smartContainer({title: "Lasagna", number: "#3", date: "10/14/16", top: 120}),
         new smartContainer({title: "Fruits", number: "#5", date: "10/15/16", top: 190}),
         new smartContainer({title: "Vegetables", number: "#4", date: "10/16/16", top: 260}),
     ]
@@ -383,7 +395,7 @@ let ReheatConfirmPage = Container.template($ => ({
     skin: orangeSkin, active: true,
     contents: [
       new Label({name: "ready", left:0, right: 0, top:180, height:20, string:"Reheat set: " + globalDate + ", " + globalTime, style: labelStyle2}),
-      new buttonTemplate({text: "Ok", action: "getStarted", top: 330, bottom: 100, left: 50, right: 50, skin: new Skin({ fill: "#a181ef"}), style: smallWhite})
+      new buttonTemplate({text: "Ok", action: "reheatAndGoHome", top: 330, bottom: 100, left: 50, right: 50, skin: new Skin({ fill: "#a181ef"}), style: smallWhite})
     ],
     Behavior: class extends Behavior { //
         onTouchEnded(content) {
@@ -491,5 +503,50 @@ let foodPage = Container.template($ => ({
 let reheatPage = new ReheatPage(); 
 let lockPage = new LockPage();
 
-application.add(splash);
+Handler.bind("/setTimeout", {
+    onInvoke: function(handler, message){
+        handler.wait(message.requestObject.duration);
+    }
+});
 
+let setTimeout = function(callback, duration) {
+    new MessageWithObject("/setTimeout", {duration}).invoke().then(() => {
+        callback();
+    });
+}
+
+// Configure application behavior and pins
+let remotePins;
+class AppBehavior extends Behavior {
+    onLaunch(application) {
+        application.add(splash);
+        let discoveryInstance = Pins.discover(
+            connectionDesc => {
+                if (connectionDesc.name == "pins-share-led") {
+                    trace("Connecting to remote pins\n");
+                    remotePins = Pins.connect(connectionDesc);
+                    remotePins.repeat("/led2/read", 50, function(result) {
+                       if (result == 0.3) {
+                       } else if (result == 0.5){
+                       } else if (result == 0.7){
+                       }
+                    });
+                    
+                }
+            }, 
+            connectionDesc => {
+                if (connectionDesc.name == "pins-share-led") {
+                    trace("Disconnected from remote pins\n");
+                    remotePins = undefined;
+                }
+            }
+        );
+    }
+    onLockorReheatContainer(application, value) {
+        // send 0.5 to lock, send 0.7 to reheat
+        if (remotePins) remotePins.invoke("/led/write", value);
+        setTimeout(function(){remotePins.invoke("/led/write", 0);}, 2000);
+    }
+}
+
+application.behavior = new AppBehavior();
