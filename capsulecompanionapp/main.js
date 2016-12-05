@@ -18,6 +18,10 @@ import {
    TopScrollerShadow,
    BottomScrollerShadow
 } from 'scroller';
+import { 
+    RadioGroup, 
+    RadioGroupBehavior
+} from 'buttons';
 
 
 
@@ -25,7 +29,7 @@ import {
 let smallBlack = new Style({ font: "15px", color: "black" });
 let smallWhite = new Style({ font: "15px", color: "white" });
 let transparentSkin = new Skin({fill: "transparent"});
-
+var radioButtonSelected = ""; 
 // Background
 var backgroundTexture = new Texture("assets/background2.jpg");
 var backgroundSkin = new Skin({
@@ -141,10 +145,16 @@ let pictureTemplate = Button.template($ => ({
                 lock.string = "Lock " + button.container.name;
                 curContainer = button.container.name;
                 application.add(lockPage);
+            } else if ($.text == "Incubate"){
+                application.remove(application.first);
+                reheat.string = "Incubate" + button.container.name;
+                application.add(new IncubatePage());
             }
         }
     }
 }));
+
+
 
 let viewContainer = Button.template($ => ({
     height: 60, left:0, right: 110, skin: new Skin({ fill : "transparent" }),
@@ -174,7 +184,8 @@ let smartContainer = Container.template($ => ({
     active: true, skin: new Skin({ fill : "#eaeaea" }),
     contents: [
         new viewContainer({title: $.title, number: $.number, date: $.date, picture: $.picture}),
-        new pictureTemplate({name: "lit", imgExt:".png", text: "Reheat", top: 10, left: 150, bottom: 30, skin: transparentSkin, width: 30}),
+        isReheatOrIncubate($),
+        // new pictureTemplate({name: "lit", imgExt:".png", text: "Reheat", top: 10, left: 150, bottom: 30, skin: transparentSkin, width: 30}),
         isLockedOrUnlocked($)
     ],
 }));
@@ -290,16 +301,16 @@ let splashButtonTemplate = Button.template($ => ({
 // Splash screen for Capsule
 let splashScreen = Container.template($ => ({
     top: 0, bottom: 0, left: 0, right: 0, name: "splashScreen",
-    active: true, skin: backgroundSkin, //skin: new Skin({ fill : "#333333" }),
+    active: true, skin: new Skin({ fill : "#191919" }),
     contents: [
         new Picture({
             width: 320, top: -35,
             url: "assets/capsule_logo.png",
         }),
-        new buttonTemplate({text: "Current Capsules", action: "getStarted", top: 150, bottom: 190, left: 15, right: 165, skin: new Skin({ fill: "#4fe372"}), style: new Style({ font: "16px", color: "white" })}),
-        new buttonTemplate({text: "Sync Capsule", action: "syncContainer", top: 150, bottom: 190, left: 165, right: 15, skin: new Skin({ fill: "#08CA33"}), style: new Style({ font: "16px", color: "white" })}),
-        new buttonTemplate({text: "Unsync Capsule", action: "unsyncContainer", top: 300, bottom: 40, left: 15, right: 165, skin: new Skin({ fill: "#08CA33"}), style: new Style({ font: "16px", color: "white" })}),
-        new buttonTemplate({text: "Add Food", action: "addFood", top: 300, bottom: 40, left: 165, right: 15, skin: new Skin({ fill: "#4fe372"}), style: new Style({ font: "16px", color: "white" })})
+        new buttonTemplate({text: "Current Capsules", action: "getStarted", top: 150, bottom: 190, left: 15, right: 165, skin: new Skin({ fill: "#4fe372"}), style: new Style({ font: "16px", color: "#191919" })}),
+        new buttonTemplate({text: "Sync Capsule", action: "syncContainer", top: 150, bottom: 190, left: 165, right: 15, skin: new Skin({ fill: "#4fe372"}), style: new Style({ font: "16px", color: "#191919" })}),
+        new buttonTemplate({text: "Unsync Capsule", action: "unsyncContainer", top: 300, bottom: 40, left: 15, right: 165, skin: new Skin({ fill: "#4fe372"}), style: new Style({ font: "16px", color: "#191919" })}),
+        new buttonTemplate({text: "Add Food", action: "addFood", top: 300, bottom: 40, left: 165, right: 15, skin: new Skin({ fill: "#4fe372"}), style: new Style({ font: "16px", color: "#191919" })})
     ],
 }));
 
@@ -353,8 +364,6 @@ function isContainerLocked(name){
     return false;
 }
 
-
-
 let containerDetailScreen = Container.template($ => ({
     top: 0, bottom: 0, left: 0, right: 0,
     active: true, skin: new Skin({ fill : "#fafafa" }),
@@ -370,6 +379,15 @@ function isLockedOrUnlocked($){
     }
     return new pictureTemplate({name: "unlocked", imgExt:".png", text: "Lock", time: "", top: 10, left: 250, bottom: 30, skin: transparentSkin, width: 30}),
 }
+function isReheatOrIncubate($){
+    
+    if(radioButtonSelected == "Reheat" || radioButtonSelected == ""){
+        return new pictureTemplate({name: "lit", imgExt:".png", text: "Reheat", top: 10, left: 150, bottom: 30, skin: transparentSkin, width: 30}),
+    } else {
+        return new pictureTemplate({name: "incubate", imgExt:".png", text: "Incubate", top: 10, left: 150, bottom: 30, skin: transparentSkin, width: 30}),
+    }
+}
+
 
 function viewTapped(){
     application.remove(application.first);
@@ -441,7 +459,7 @@ let whiteSkin = new Skin({ fill: "white" });
 let fieldLabelSkin = new Skin({ fill: ['transparent', 'transparent', '#C0C0C0', '#acd473'] });
 
 let typeField = Column.template($ => ({
-    width: 200, height: 72, skin: nameInputSkin, contents: [
+    width: 200, height: 72, top:100, skin: nameInputSkin, contents: [
         Scroller($, {
             left: 4, right: 4, top: 4, bottom: 4, active: true,
             Behavior: FieldScrollerBehavior, clip: true,
@@ -502,6 +520,7 @@ var orangeSkin = new Skin({ fill: 'white' });
 var bigText = new Style({ font: "bold 14px", color: "#333333" });
 
 var reheat = new Label({name: "reheat", left:0, right: 0, top:50, height:20, string:"Reheat Lasagna Container", style: labelStyle});
+var incubate = new Label({name: "incubate", left:0, right: 0, top:50, height:20, string:"Reheat Lasagna Container", style: labelStyle});
 
 var container = new Container({
 left: 0, right: 0, top: 80,height:2,
@@ -542,6 +561,27 @@ let ReheatPage = Container.template($ => ({
         }
     }
 }));
+let IncubatePage = Container.template($ => ({
+    top: 0, bottom: 0, left: 0, right: 0,
+    skin: orangeSkin, active: true,
+    contents: [
+      new appHeader({backButton: "back"}),
+      reheat,
+      container,
+      kinomaLogo,
+      ready,
+      new typeField({name1: "", name2: "", placeholder1: "mm/dd/yy", placeholder2: "time (ex: 2:00 pm)"}),
+      new buttonTemplate({text: "Incubate", action: "reheatConfirm", top: 330, bottom: 100, left: 50, right: 50, skin: new Skin({ fill: "#4fe372"}), style: smallWhite})
+    ],
+    Behavior: class extends Behavior { //
+        onTouchEnded(content) {
+            KEYBOARD.hide();
+            content.focus();
+        }
+    }
+}));
+
+
 
 //New: reheating lock page
 
@@ -627,14 +667,26 @@ let LockConfirmPage = Container.template($ => ({
 }));
 
 
+let MyRadioGroup = RadioGroup.template($ => ({
+    top: 230, left: 10,
+    Behavior: class extends RadioGroupBehavior {
+        onRadioButtonSelected(buttonName) {
+            radioButtonSelected = buttonName;
+        }
+    }
+}));
+
 //Add food page
 let foodPage = Container.template($ => ({
     top: 0, bottom: 0, left: 0, right: 0,
+    active: true,
     skin: orangeSkin,
     contents: [
       new appHeader({backButton: "back", backToSplash: true}),
       new Label({string: "Add Food", top: 60, style: labelStyle}),
-      new typeField({name1: "", name2: "", placeholder1: "Descriptive Name", placeholder2: "Container #..."}),
+      new typeField({name1: "", name2: "", top: 80, bottom: 300, placeholder1: "Descriptive Name", placeholder2: "Container #..."}),
+      new Label({string: "Choose option:", top: 200,left: 0,style: labelStyle3}),
+      new MyRadioGroup({buttonNames: "Reheat,Incubate"}),
       new buttonTemplate({text: "Add Food", action: "confirmFood", top: 330, bottom: 100, left: 50, right: 50, skin: new Skin({ fill: "#4fe372"}), style: smallWhite})
     ],
     Behavior: class extends Behavior { //
@@ -651,7 +703,7 @@ let foodPage = Container.template($ => ({
 // ADDS THE LOCK PAGE
 // application.add(new LockPage());
 
-
+// let incubatePage = new IncubatePage();
 let reheatPage = new ReheatPage();
 let lockPage = new LockPage();
 
