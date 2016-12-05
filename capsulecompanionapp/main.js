@@ -90,7 +90,7 @@ function backbutton($) {
 let backButtonImg = Button.template($ => ({
     top: $.top, bottom: $.bottom, left: $.left, right: $.right, skin: $.skin,
     contents: [
-        new Picture({left: -2, url: "assets/back1.png"})
+        new Picture({left: -2, width:25, url: "assets/back1.png"})
     ],
     Behavior: class extends ButtonBehavior {
         onTouchEnded(button) {
