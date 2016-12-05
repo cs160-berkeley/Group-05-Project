@@ -15,9 +15,7 @@ let transparentSkin = new Skin({ fill : "transparent" });
 var odd = true;
 var currentContainer = "Avocados";
 var globalStatus = "unlocked";
-
-// Needed for cross-device handlers
-var deviceURL = '';
+var allFoodContainers;
 
 // Controls behavior of all buttons
 function buttonOnTap(type){
@@ -32,8 +30,12 @@ function buttonOnTap(type){
         application.distribute('onButtonPress', 0.7);
     }
     if (type == "viewFood"){
-        application.remove(application.first);
-        application.add(new containerList());
+        if (deviceURL != "") new Message(deviceURL + "getContainers").invoke(Message.TEXT)
+                .then(json => { 
+                    allFoodContainers = JSON.parse(json);
+                    application.remove(application.first);
+                    application.add(new containerList());
+        });
     }
 
     if (type == "getStarted"){
@@ -145,18 +147,14 @@ let smartContainer = Container.template($ => ({
 }));
 
 function foodContainers(){
-    var ret = [
-        new smartContainer({title: "Avocados", number: "#2", date: "10/17/16", top: 50}),
-        new smartContainer({title: "Lasagna", number: "#3", date: "10/14/16", top: 120}),
-        new smartContainer({title: "Fruits", number: "#5", date: "10/15/16", top: 190}),
-        new smartContainer({title: "Vegetables", number: "#4", date: "10/16/16", top: 260}),
-    ]
-    /*
-    var top = 260;
-    for (var i = 0; i < foodContainersCreated.length; i++){
+    var top = -20;
+    let keys = Object.keys(allFoodContainers);
+    var ret = [];
+    for (var x = 0; x < keys.length; x++){
+        var i = keys[x];
         top += 70;
-        ret.push(new smartContainer({title: foodContainersCreated[i].title, number: "#" + foodContainersCreated[i].number, date: "10/16/16", top: top}))
-    }*/
+        ret.push(new smartContainer({title: allFoodContainers[i].title, number: "#" + i, date: allFoodContainers[i].date, top: top}),);
+    }
     return ret;
 }
 
@@ -198,8 +196,30 @@ function removeNotification(){
     application.distribute('onButtonPress', 0);
 }
 
+// Needed for cross-device handlers
+var deviceURL = '';
+
+Handler.bind("/discover", Behavior({
+    onInvoke: function(handler, message){
+        deviceURL = JSON.parse(message.requestText).url;
+        new Message(deviceURL + "getContainers").invoke(Message.TEXT)
+                .then(json => { 
+                    allFoodContainers = JSON.parse(json);
+        });
+    }
+}));
+
+Handler.bind("/forget", Behavior({
+    onInvoke: function(handler, message){
+        deviceURL = "";
+    }
+}));
+
 // Configure all Pins in the AppBehavior and set up functionality
 class AppBehavior extends Behavior {
+    onDisplayed(application) {
+        application.discover("capsulecompanionapp.project.kinoma.marvell.com");
+    }
     onLaunch(application) {
         Pins.configure({
             led: {
@@ -243,6 +263,9 @@ class AppBehavior extends Behavior {
             setTimeout(removeNotification, 2000);
         }
         Pins.invoke("/led2/write", value);
+    }
+    onQuit(application){
+        application.forget("capsulecompanionapp.project.kinoma.marvell.com");
     }
 }
 application.behavior = new AppBehavior();
