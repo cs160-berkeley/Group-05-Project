@@ -2,7 +2,7 @@ import Pins from "pins";
 
 import { // Imports for button behavior
     Button,
-    ButtonBehavior 
+    ButtonBehavior
 } from 'buttons';
 
 import {
@@ -13,6 +13,13 @@ import {
 import {
     SystemKeyboard
 } from 'keyboard';
+
+import {
+   VerticalScroller,
+   VerticalScrollbar,
+   TopScrollerShadow,
+   BottomScrollerShadow
+} from 'scroller';
 
 
 
@@ -34,19 +41,22 @@ var backgroundSkin = new Skin({
 let globalDate = '2016';
 let globalTime = '2:00 pm';
 
+var top = 0;
+var count = 0;
+
 // Keep track of which locked
 var lockedContainers = [];
 var curContainer = null;
 var curContainerNumber;
 var curContainerDate;
 var curContainerFoodStatus = 'Fresh';
-var foodContainersCreated = [];
-var foodContainersStatus = [
-    {title: "Avocados", status: "fresh"}, 
-    {title: "Lasagna", status: "fresh"}, 
-    {title: "Fruits", status: "fresh"}, 
-    {title: "Vegetables", status: "fresh"}
-];
+var allFoodContainers = {
+    2 : {title: "Avocados", date: "10/17/16"},
+    3 : {title: "Lasagna", date: "10/14/16"},
+    5 : {title: "Fruits", date: "10/15/16"},
+    4 : {title: "Vegetables", date: "10/16/16"}
+};
+
 
 function hasBackButton($){
     if ($ && $.backButton){
@@ -59,11 +69,99 @@ function hasBackButton($){
 // Container for the app header
 let appHeader = Container.template($ => ({
     left: 0, right: 0, top: 0, height: 40,
-    skin: new Skin({ fill: "#ff6666"}), style: smallBlack, 
+    skin: new Skin({ fill: "#ff6666"}), style: smallBlack,
     contents: [
         hasBackButton($),
         new Label({top:12, string: "capsule" }),
     ]
+}));
+
+// Reusable button template for the app
+let buttonTemplate = Button.template($ => ({
+    top: $.top, bottom: $.bottom, left: $.left, right: $.right, skin: $.skin,
+    contents: [
+        Label($, { name: $.name , top: 0, bottom: 0, left: 0, right: 0, style: $.style, string: $.text })
+    ],
+    Behavior: class extends ButtonBehavior {
+        onTouchBegan(button) {
+            if (button.container.name == "splashScreen") {
+                prevSkin = button.skin;
+                button.skin = new Skin({fill : "black"});
+            }
+
+        }
+        onTouchEnded(button) {
+            button.skin = prevSkin;
+            buttonOnTap($.action);
+        }
+    }
+}));
+
+// Picture template for the Image buttons
+let pictureTemplate = Button.template($ => ({
+    top: $.top, bottom: $.bottom, left: $.left, right: 10, skin: $.skin, name: $.name + "Button",
+    contents: [
+        new Picture({
+            width: $.width,
+            url: "assets/" + $.name + $.imgExt,
+        }),
+        new Label({string: $.text, top: 30, style: new Style({ font: "13px", color: "black" })}),
+        ifPictureHasTime($)
+    ],
+    Behavior: class extends ButtonBehavior {
+        onTap(button){
+            if ($.text == "Reheat"){
+                if (!isContainerLocked(button.container.name)){
+                    application.remove(application.first);
+                    reheat.string = "Reheat " + button.container.name;
+                    application.add(reheatPage);
+                }
+            } else if ($.text == "Lock"){
+                application.remove(application.first);
+                lock.string = "Lock " + button.container.name;
+                curContainer = button.container.name;
+                application.add(lockPage);
+            }
+        }
+    }
+}));
+
+let viewContainer = Button.template($ => ({
+    height: 60, left:0, right: 110, skin: new Skin({ fill : "transparent" }),
+    contents:[
+        new Picture({
+            width: 50, left: 5,
+            url: "assets/imgplaceholder.jpg",
+        }),
+        new Label({left: 60, top:10, string: $.title, style: smallBlack}),
+        new Label({left: 60, top:25, string: $.number, style: new Style({ font: "13px", color: "black" })}),
+        new Label({left: 60, top:45, string: $.date, style: new Style({ font: "10px", color: "black" })}),
+    ],
+    Behavior: class extends ButtonBehavior {
+        onTap(button){
+            curContainerNumber = $.number;
+            curContainerDate = $.date;
+            curContainer = $.title;
+            viewTapped();
+        }
+    }
+}));
+
+// Smart Containers
+let smartContainer = Container.template($ => ({
+    height: 65, left: 0, right: 0, top: $.top, name: $.title,
+    active: true, skin: new Skin({ fill : "#eaeaea" }),
+    contents: [
+        new viewContainer({title: $.title, number: $.number, date: $.date}),
+        new pictureTemplate({name: "lit", imgExt:".png", text: "Reheat", top: 10, left: 150, bottom: 30, skin: transparentSkin, width: 30}),
+        isLockedOrUnlocked($)
+    ],
+}));
+
+// Content that will be scrollable
+let contentToScrollVertically = Column.template($ => ({
+    top: 0, left: 0, right: 0, height:1000,skin: new Skin({ fill : "#fafafa" }), name: 'vertical',
+        contents: foodContainers(),
 }));
 
 // Controls behavior of all buttons built with ButtonTemplate
@@ -100,34 +198,41 @@ function buttonOnTap(action){
         application.add(new foodPage());
     }
     if (action == 'confirmFood'){
-        foodContainersCreated.push({title : globalDate, number: globalTime});
+        if (allFoodContainers[globalTime]){
+            allFoodContainers[globalTime].title = globalDate;
+        }
         application.remove(application.first);
         application.add(new homeScreen());
+    }
+    if (action == 'syncContainer'){
+        application.remove(application.first);
+        application.add(new syncScreen());
+    }
+    if (action == 'unsyncContainer'){
+        application.remove(application.first);
+        application.add(new unsyncScreen());
+    }
+    if (action == 'confirmSync'){
+        if (!allFoodContainers[globalDate]){ // No repeated container numbers
+            allFoodContainers[globalDate] = {title : "(Empty Container)", date: globalTime};
+        }
+
+        application.remove(application.first);
+        application.add(new homeScreen()); 
+
+    }
+    if (action == 'confirmUnsync'){
+        if (allFoodContainers[globalDate]){ // Make sure it exists
+            delete allFoodContainers[globalDate];
+        }
+        application.remove(application.first);
+        application.add(new homeScreen()); 
     }
 }
 
 var prevSkin;
 
-// Reusable button template for the app
-let buttonTemplate = Button.template($ => ({
-    top: $.top, bottom: $.bottom, left: $.left, right: $.right, skin: $.skin,
-    contents: [
-        Label($, { name: $.name , top: 0, bottom: 0, left: 0, right: 0, style: $.style, string: $.text })
-    ],
-    Behavior: class extends ButtonBehavior {
-        onTouchBegan(button) {
-            if (button.container.name == "splashScreen") {
-                prevSkin = button.skin;
-                button.skin = new Skin({fill : "black"});
-            }
-            
-        }
-        onTouchEnded(button) {
-            button.skin = prevSkin;
-            buttonOnTap($.action);
-        }
-    }
-}));
+
 
 
 // Splash screen for Capsule
@@ -140,10 +245,46 @@ let splashScreen = Container.template($ => ({
             url: "assets/logo.png",
         }),
         new buttonTemplate({text: "Current Capsules", action: "getStarted", top: 150, bottom: 190, left: 15, right: 165, skin: new Skin({ fill: "#ff6666"}), style: new Style({ font: "16px", color: "white" })}),
-        new buttonTemplate({text: "Sync Capsule", top: 150, bottom: 190, left: 165, right: 15, skin: new Skin({ fill: "#79cdcd"}), style: new Style({ font: "16px", color: "white" })}),
-        new buttonTemplate({text: "Unsync Capsule", top: 300, bottom: 40, left: 15, right: 165, skin: new Skin({ fill: "#79cdcd"}), style: new Style({ font: "16px", color: "white" })}),
+        new buttonTemplate({text: "Sync Capsule", action: "syncContainer", top: 150, bottom: 190, left: 165, right: 15, skin: new Skin({ fill: "#79cdcd"}), style: new Style({ font: "16px", color: "white" })}),
+        new buttonTemplate({text: "Unsync Capsule", action: "unsyncContainer", top: 300, bottom: 40, left: 15, right: 165, skin: new Skin({ fill: "#79cdcd"}), style: new Style({ font: "16px", color: "white" })}),
         new buttonTemplate({text: "Add Food", action: "addFood", top: 300, bottom: 40, left: 165, right: 15, skin: new Skin({ fill: "#ff6666"}), style: new Style({ font: "16px", color: "white" })})
     ],
+}));
+
+//sync for food containers
+let syncScreen = Container.template($ => ({
+    top: 0, bottom: 0, left: 0, right: 0, name: "syncScreen",
+    active: true, skin: new Skin({ fill : "#eaeaea" }), //skin: new Skin({ fill : "#333333" }),
+    contents: [
+      new appHeader({backButton: "back", backToSplash: true}),
+      new Label({string: "Sync a new container", top: 60, style: new Style({ font: "20px", color: "black" })}),
+      new typeField({name1: "", name2: "", placeholder1: "Container #...", placeholder2: "Container Date"}),
+      new buttonTemplate({text: "Sync Container", action: "confirmSync", top: 330, bottom: 100, left: 50, right: 50, skin: new Skin({ fill: "#a181ef"}), style: smallWhite})
+    ],
+    Behavior: class extends Behavior { //
+        onTouchEnded(content) {
+            SystemKeyboard.hide();
+            content.focus();
+        }
+    }
+}));
+
+//sync for food containers
+let unsyncScreen = Container.template($ => ({
+    top: 0, bottom: 0, left: 0, right: 0, name: "syncScreen",
+    active: true, skin: new Skin({ fill : "#eaeaea" }), //skin: new Skin({ fill : "#333333" }),
+    contents: [
+      new appHeader({backButton: "back", backToSplash: true}),
+      new Label({string: "Unsync a container", top: 60, style: new Style({ font: "20px", color: "black" })}),
+      new typeField({name1: "", name2: "", placeholder1: "Container #...", placeholder2: "Container Date"}),
+      new buttonTemplate({text: "Unsync Container", action: "confirmUnsync", top: 330, bottom: 100, left: 50, right: 50, skin: new Skin({ fill: "#a181ef"}), style: smallWhite})
+    ],
+    Behavior: class extends Behavior { //
+        onTouchEnded(content) {
+            SystemKeyboard.hide();
+            content.focus();
+        }
+    }
 }));
 
 function ifPictureHasTime($){
@@ -160,40 +301,13 @@ function isContainerLocked(name){
     return false;
 }
 
-// Picture template for the Image buttons
-let pictureTemplate = Button.template($ => ({
-    top: $.top, bottom: $.bottom, left: $.left, right: 10, skin: $.skin, name: $.name + "Button",
-    contents: [
-        new Picture({
-            width: $.width, 
-            url: "assets/" + $.name + $.imgExt,
-        }),
-        new Label({string: $.text, top: 30, style: new Style({ font: "13px", color: "black" })}),
-        ifPictureHasTime($)
-    ],
-    Behavior: class extends ButtonBehavior {
-        onTap(button){
-            if ($.text == "Reheat"){
-                if (!isContainerLocked(button.container.name)){
-                    application.remove(application.first);
-                    reheat.string = "Reheat " + button.container.name;
-                    application.add(reheatPage);
-                }
-            } else if ($.text == "Lock"){
-                application.remove(application.first);
-                lock.string = "Lock " + button.container.name;
-                curContainer = button.container.name;
-                application.add(lockPage);
-            }
-        }
-    }
-}));
+
 
 let containerDetailScreen = Container.template($ => ({
     top: 0, bottom: 0, left: 0, right: 0,
     active: true, skin: new Skin({ fill : "#fafafa" }),
     contents: $.content,
-})); 
+}));
 
 function isLockedOrUnlocked($){
     for (var i = 0; i < lockedContainers.length; i++){
@@ -226,50 +340,17 @@ function viewTapped(){
     }));
 }
 
-let viewContainer = Button.template($ => ({
-    height: 60, left:0, right: 110, skin: new Skin({ fill : "transparent" }),
-    contents:[
-        new Picture({
-            width: 50, left: 5,
-            url: "assets/imgplaceholder.jpg",
-        }),
-        new Label({left: 60, top:10, string: $.title, style: smallBlack}),
-        new Label({left: 60, top:25, string: $.number, style: new Style({ font: "13px", color: "black" })}),
-        new Label({left: 60, top:45, string: $.date, style: new Style({ font: "10px", color: "black" })}),
-    ],
-    Behavior: class extends ButtonBehavior {
-        onTap(button){
-            curContainerNumber = $.number;
-            curContainerDate = $.date;
-            curContainer = $.title;
-            viewTapped();
-        }
-    }
-}));
 
-// Smart Containers
-let smartContainer = Container.template($ => ({
-    height: 65, left: 0, right: 0, top: $.top, name: $.title,
-    active: true, skin: new Skin({ fill : "#eaeaea" }),
-    contents: [
-        new viewContainer({title: $.title, number: $.number, date: $.date}),
-        new pictureTemplate({name: "lit", imgExt:".png", text: "Reheat", top: 10, left: 150, bottom: 30, skin: transparentSkin, width: 30}),
-        isLockedOrUnlocked($)
-    ],
-}));
+
 
 function foodContainers(){
-    var ret = [
-        new appHeader({backButton: "back", backToSplash: true}),
-        new smartContainer({title: "Avocados", number: "#2", date: "10/17/16", top: 50}),
-        new smartContainer({title: "Lasagna", number: "#3", date: "10/14/16", top: 120}),
-        new smartContainer({title: "Fruits", number: "#5", date: "10/15/16", top: 190}),
-        new smartContainer({title: "Vegetables", number: "#4", date: "10/16/16", top: 260}),
-    ]
-    var top = 260;
-    for (var i = 0; i < foodContainersCreated.length; i++){
-        top += 70;
-        ret.push(new smartContainer({title: foodContainersCreated[i].title, number: "#" + foodContainersCreated[i].number, date: "10/16/16", top: top}))
+    var top = -20;
+    let keys = Object.keys(allFoodContainers);
+    var ret = [];
+    for (var x = 0; x < keys.length; x++){
+        var i = keys[x];
+        // top += 70;
+        ret.push(new smartContainer({title: allFoodContainers[i].title, number: "#" + i, date: allFoodContainers[i].date, top: 5}),);
     }
     return ret;
 }
@@ -277,10 +358,21 @@ function foodContainers(){
 let homeScreen = Container.template($ => ({
     top: 0, bottom: 0, left: 0, right: 0,
     active: true, skin: new Skin({ fill : "#fafafa" }),
-    contents: foodContainers(),
+    contents: [
+        new appHeader({backButton: "back", backToSplash: true}),
+        VerticalScroller($, {
+          active: true, top: 45, bottom: 0,name: 'scroller',
+          contents: [
+            new contentToScrollVertically(),
+        VerticalScrollbar(),
+        TopScrollerShadow(),
+        BottomScrollerShadow(),
+    ]
+  })
+    ]
 }));
 
-let splash = new splashScreen(); 
+let splash = new splashScreen();
 let home = new homeScreen();
 
 //**
@@ -295,14 +387,14 @@ let fieldHintStyle = new Style({ color: '#aaa', font: '24px', horizontal: 'left'
 let whiteSkin = new Skin({ fill: "white" });
 let fieldLabelSkin = new Skin({ fill: ['transparent', 'transparent', '#C0C0C0', '#acd473'] });
 
-let typeField = Column.template($ => ({ 
+let typeField = Column.template($ => ({
     width: 200, height: 72, skin: nameInputSkin, contents: [
-        Scroller($, { 
-            left: 4, right: 4, top: 4, bottom: 4, active: true, 
-            Behavior: FieldScrollerBehavior, clip: true, 
+        Scroller($, {
+            left: 4, right: 4, top: 4, bottom: 4, active: true,
+            Behavior: FieldScrollerBehavior, clip: true,
             contents: [
-                Label($, { 
-                    left: 0, top: 0, bottom: 0, skin: fieldLabelSkin, 
+                Label($, {
+                    left: 0, top: 0, bottom: 0, skin: fieldLabelSkin,
                     style: fieldStyle, anchor: 'NAME',
                     editable: true, string: $.name1,
                     Behavior: class extends FieldLabelBehavior {
@@ -321,12 +413,12 @@ let typeField = Column.template($ => ({
                 }),
             ]
         }),
-        Scroller($, { 
-            left: 4, right: 4, top: 4, bottom: 4, active: true, 
-            Behavior: FieldScrollerBehavior, clip: true, 
+        Scroller($, {
+            left: 4, right: 4, top: 4, bottom: 4, active: true,
+            Behavior: FieldScrollerBehavior, clip: true,
             contents: [
-                Label($, { 
-                    left: 0, top: 0, bottom: 0, skin: fieldLabelSkin, 
+                Label($, {
+                    left: 0, top: 0, bottom: 0, skin: fieldLabelSkin,
                     style: fieldStyle, anchor: 'NAME',
                     editable: true, string: $.name2,
                     Behavior: class extends FieldLabelBehavior {
@@ -491,7 +583,7 @@ let foodPage = Container.template($ => ({
     top: 0, bottom: 0, left: 0, right: 0,
     skin: orangeSkin,
     contents: [
-      new appHeader({backButton: "back"}),
+      new appHeader({backButton: "back", backToSplash: true}),
       new typeField({name1: "", name2: "", placeholder1: "Descriptive Name", placeholder2: "Container #..."}),
       new buttonTemplate({text: "Add Food", action: "confirmFood", top: 330, bottom: 100, left: 50, right: 50, skin: new Skin({ fill: "#a181ef"}), style: smallWhite})
     ],
@@ -510,7 +602,7 @@ let foodPage = Container.template($ => ({
 // application.add(new LockPage());
 
 
-let reheatPage = new ReheatPage(); 
+let reheatPage = new ReheatPage();
 let lockPage = new LockPage();
 
 Handler.bind("/setTimeout", {
@@ -525,10 +617,21 @@ let setTimeout = function(callback, duration) {
     });
 }
 
+Handler.bind("/getContainers", Behavior({
+    onInvoke: function(handler, message){
+        message.responseText = JSON.stringify( allFoodContainers );
+        message.status = 200;
+    }
+}));
+
+// Needed for cross-device handlers
+var deviceURL = '';
+
 // Configure application behavior and pins
 let remotePins;
 class AppBehavior extends Behavior {
     onLaunch(application) {
+        application.shared = true;
         application.add(splash);
         let discoveryInstance = Pins.discover(
             connectionDesc => {
@@ -540,16 +643,16 @@ class AppBehavior extends Behavior {
                         curContainerFoodStatus = "Edible";
                         if (curContainer) viewTapped();
                        } else if (result == 0.5){
-                        curContainerFoodStatus = "Spoiled";
+                        curContainerFoodStatus = "Bad";
                         if (curContainer) viewTapped();
                        } else if (result == 0.7){
                         curContainerFoodStatus = "Fresh";
                         if (curContainer) viewTapped();
                        }
                     });
-                    
+
                 }
-            }, 
+            },
             connectionDesc => {
                 if (connectionDesc.name == "pins-share-led") {
                     trace("Disconnected from remote pins\n");
@@ -562,6 +665,9 @@ class AppBehavior extends Behavior {
         // send 0.5 to lock, send 0.7 to reheat
         if (remotePins) remotePins.invoke("/led/write", value);
         setTimeout(function(){remotePins.invoke("/led/write", 0);}, 2000);
+    }
+    onQuit(application){
+        application.shared = false;
     }
 }
 
