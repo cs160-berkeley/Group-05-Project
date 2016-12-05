@@ -309,7 +309,7 @@ let syncScreen = Container.template($ => ({
     active: true, skin: new Skin({ fill : "#eaeaea" }), //skin: new Skin({ fill : "#333333" }),
     contents: [
       new appHeader({backButton: "back", backToSplash: true}),
-      new Label({string: "Sync a new container", top: 60, style: new Style({ font: "20px", color: "black" })}),
+      new Label({string: "Sync a new container", top: 60, style: labelStyle}),
       new typeField({name1: "", name2: "", placeholder1: "Container #...", placeholder2: "Container Date"}),
       new buttonTemplate({text: "Sync Container", action: "confirmSync", top: 330, bottom: 100, left: 50, right: 50, skin: new Skin({ fill: "#4fe372"}), style: smallWhite})
     ],
@@ -327,7 +327,7 @@ let unsyncScreen = Container.template($ => ({
     active: true, skin: new Skin({ fill : "#eaeaea" }), //skin: new Skin({ fill : "#333333" }),
     contents: [
       new appHeader({backButton: "back", backToSplash: true}),
-      new Label({string: "Unsync a container", top: 60, style: new Style({ font: "20px", color: "black" })}),
+      new Label({string: "Unsync a container", top: 60, style: labelStyle}),
       new typeField({name1: "", name2: "", placeholder1: "Container #...", placeholder2: "Container Date"}),
       new buttonTemplate({text: "Unsync Container", action: "confirmUnsync", top: 330, bottom: 100, left: 50, right: 50, skin: new Skin({ fill: "#4fe372"}), style: smallWhite})
     ],
@@ -633,6 +633,7 @@ let foodPage = Container.template($ => ({
     skin: orangeSkin,
     contents: [
       new appHeader({backButton: "back", backToSplash: true}),
+      new Label({string: "Add Food", top: 60, style: labelStyle}),
       new typeField({name1: "", name2: "", placeholder1: "Descriptive Name", placeholder2: "Container #..."}),
       new buttonTemplate({text: "Add Food", action: "confirmFood", top: 330, bottom: 100, left: 50, right: 50, skin: new Skin({ fill: "#4fe372"}), style: smallWhite})
     ],
