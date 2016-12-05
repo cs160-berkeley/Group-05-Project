@@ -45,33 +45,58 @@ var count = 0;
 // Keep track of which locked
 var lockedContainers = [];
 var curContainer = null;
+var curContainerImage;
 var curContainerNumber;
 var curContainerDate;
 var curContainerFoodStatus = 'Fresh';
 var allFoodContainers = {
-    2 : {title: "Avocados", date: "10/17/16"},
-    3 : {title: "Lasagna", date: "10/14/16"},
-    5 : {title: "Fruits", date: "10/15/16"},
-    4 : {title: "Vegetables", date: "10/16/16"}
+    2 : {title: "Avocados", date: "10/17/16", picture: "assets/avocados.jpg"},
+    3 : {title: "Lasagna", date: "10/14/16", picture: "assets/lasagna.jpg"},
+    5 : {title: "Fruits", date: "10/15/16", picture: "assets/fruit.jpg"},
+    4 : {title: "Vegetables", date: "10/16/16", picture: "assets/vegetables.jpg"}
 };
 
 
 function hasBackButton($){
     if ($ && $.backButton){
         if ($.backToSplash){
-            return new buttonTemplate({text: $.backButton, action: 'backToSplash', top: 0, bottom: 0, left: 10, right: 250, skin: transparentSkin, style: smallBlack}),
+            return new backButtonImg({text: $.backButton, action: 'backToSplash', top: 0, bottom: 0, left: 10, right: 250, skin: transparentSkin, style: smallBlack}),
         }
-        return new buttonTemplate({text: $.backButton, action: 'getStarted', top: 0, bottom: 0, left: 10, right: 250, skin: transparentSkin, style: smallBlack}),
+        return new backButtonImg({text: $.backButton, action: 'getStarted', top: 0, bottom: 0, left: 10, right: 250, skin: transparentSkin, style: smallBlack}),
     }
 }
 // Container for the app header
 let appHeader = Container.template($ => ({
     left: 0, right: 0, top: 0, height: 40,
-    skin: new Skin({ fill: "#ff6666"}), style: smallBlack,
+    skin: new Skin({ fill: "#191919"}), style: smallBlack,
     contents: [
         hasBackButton($),
-        new Label({top:12, string: "capsule" }),
+        //new Label({top:12, string: "capsule" }),
+        new Picture({
+            width: 100,
+            url: "assets/header_logo.png",
+        })
     ]
+}));
+
+function backbutton($) {
+	if ($.action == 'getStarted' || $.action == 'addFood' || $.action == 'syncContainer' || $.action == 'unsyncContainer') {
+		return Label($, { name: $.name , top: 0, bottom: 0, left: 0, right: 0, style: $.style, string: $.text });
+	}
+	return new Picture({left: -2, url: "assets/back1.png"});
+
+}
+
+let backButtonImg = Button.template($ => ({
+    top: $.top, bottom: $.bottom, left: $.left, right: $.right, skin: $.skin,
+    contents: [
+        new Picture({left: -2, url: "assets/back1.png"})
+    ],
+    Behavior: class extends ButtonBehavior {
+        onTouchEnded(button) {
+            buttonOnTap($.action);
+        }
+    }
 }));
 
 // Reusable button template for the app
@@ -82,11 +107,8 @@ let buttonTemplate = Button.template($ => ({
     ],
     Behavior: class extends ButtonBehavior {
         onTouchBegan(button) {
-            if (button.container.name == "splashScreen") {
                 prevSkin = button.skin;
-                button.skin = new Skin({fill : "black"});
-            }
-
+                button.skin = new Skin({fill : "#295f35"});
         }
         onTouchEnded(button) {
             button.skin = prevSkin;
@@ -129,7 +151,7 @@ let viewContainer = Button.template($ => ({
     contents:[
         new Picture({
             width: 50, left: 5,
-            url: "assets/imgplaceholder.jpg",
+            url: $.picture,
         }),
         new Label({left: 60, top:10, string: $.title, style: smallBlack}),
         new Label({left: 60, top:25, string: $.number, style: new Style({ font: "13px", color: "black" })}),
@@ -140,6 +162,7 @@ let viewContainer = Button.template($ => ({
             curContainerNumber = $.number;
             curContainerDate = $.date;
             curContainer = $.title;
+            curContainerImage = $.picture;
             viewTapped();
         }
     }
@@ -150,7 +173,7 @@ let smartContainer = Container.template($ => ({
     height: 65, left: 0, right: 0, top: $.top, name: $.title,
     active: true, skin: new Skin({ fill : "#eaeaea" }),
     contents: [
-        new viewContainer({title: $.title, number: $.number, date: $.date}),
+        new viewContainer({title: $.title, number: $.number, date: $.date, picture: $.picture}),
         new pictureTemplate({name: "lit", imgExt:".png", text: "Reheat", top: 10, left: 150, bottom: 30, skin: transparentSkin, width: 30}),
         isLockedOrUnlocked($)
     ],
@@ -216,7 +239,7 @@ function buttonOnTap(action){
         }
 
         application.remove(application.first);
-        application.add(new homeScreen());
+        application.add(new homeScreen()); 
 
     }
     if (action == 'confirmUnsync'){
@@ -224,13 +247,44 @@ function buttonOnTap(action){
             delete allFoodContainers[globalDate];
         }
         application.remove(application.first);
-        application.add(new homeScreen());
+        application.add(new homeScreen()); 
     }
 }
 
 var prevSkin;
 
+function getIcon($) {
+	if ($.action == "getStarted") {
+		return new Picture({width: 50, url: "assets/list.png",})
+	}
+	if ($.action == "syncContainer") {
+		return new Picture({width: 50, url: "assets/sync.png",})
+	}
+	if ($.action == "unsyncContainer") {
+		return new Picture({width: 50, url: "assets/unsync.png",})
+	}
+	if ($.action == "addFood") {
+		return new Picture({width: 50, url: "assets/add.png",})
+	}
+}
 
+let splashButtonTemplate = Button.template($ => ({
+    top: $.top, bottom: $.bottom, left: $.left, right: $.right, skin: $.skin,
+    contents: [
+    	getIcon($),
+        Label($, { name: $.name , top: 100, bottom: 0, left: 0, right: 0, style: $.style, string: $.text })
+    ],
+    Behavior: class extends ButtonBehavior {
+        onTouchBegan(button) {
+                prevSkin = button.skin;
+                button.skin = new Skin({fill : "#295f35"});
+        }
+        onTouchEnded(button) {
+            button.skin = prevSkin;
+            buttonOnTap($.action);
+        }
+    }
+}));
 
 
 // Splash screen for Capsule
@@ -242,10 +296,10 @@ let splashScreen = Container.template($ => ({
             width: 320, top: -35,
             url: "assets/capsule_logo.png",
         }),
-        new buttonTemplate({text: "Current Capsules", action: "getStarted", top: 150, bottom: 190, left: 15, right: 165, skin: new Skin({ fill: "#ff6666"}), style: new Style({ font: "16px", color: "white" })}),
-        new buttonTemplate({text: "Sync Capsule", action: "syncContainer", top: 150, bottom: 190, left: 165, right: 15, skin: new Skin({ fill: "#79cdcd"}), style: new Style({ font: "16px", color: "white" })}),
-        new buttonTemplate({text: "Unsync Capsule", action: "unsyncContainer", top: 300, bottom: 40, left: 15, right: 165, skin: new Skin({ fill: "#79cdcd"}), style: new Style({ font: "16px", color: "white" })}),
-        new buttonTemplate({text: "Add Food", action: "addFood", top: 300, bottom: 40, left: 165, right: 15, skin: new Skin({ fill: "#ff6666"}), style: new Style({ font: "16px", color: "white" })})
+        new buttonTemplate({text: "Current Capsules", action: "getStarted", top: 150, bottom: 190, left: 15, right: 165, skin: new Skin({ fill: "#4fe372"}), style: new Style({ font: "16px", color: "white" })}),
+        new buttonTemplate({text: "Sync Capsule", action: "syncContainer", top: 150, bottom: 190, left: 165, right: 15, skin: new Skin({ fill: "#08CA33"}), style: new Style({ font: "16px", color: "white" })}),
+        new buttonTemplate({text: "Unsync Capsule", action: "unsyncContainer", top: 300, bottom: 40, left: 15, right: 165, skin: new Skin({ fill: "#08CA33"}), style: new Style({ font: "16px", color: "white" })}),
+        new buttonTemplate({text: "Add Food", action: "addFood", top: 300, bottom: 40, left: 165, right: 15, skin: new Skin({ fill: "#4fe372"}), style: new Style({ font: "16px", color: "white" })})
     ],
 }));
 
@@ -257,7 +311,7 @@ let syncScreen = Container.template($ => ({
       new appHeader({backButton: "back", backToSplash: true}),
       new Label({string: "Sync a new container", top: 60, style: new Style({ font: "20px", color: "black" })}),
       new typeField({name1: "", name2: "", placeholder1: "Container #...", placeholder2: "Container Date"}),
-      new buttonTemplate({text: "Sync Container", action: "confirmSync", top: 330, bottom: 100, left: 50, right: 50, skin: new Skin({ fill: "#a181ef"}), style: smallWhite})
+      new buttonTemplate({text: "Sync Container", action: "confirmSync", top: 330, bottom: 100, left: 50, right: 50, skin: new Skin({ fill: "#4fe372"}), style: smallWhite})
     ],
     Behavior: class extends Behavior { //
         onTouchEnded(content) {
@@ -275,7 +329,7 @@ let unsyncScreen = Container.template($ => ({
       new appHeader({backButton: "back", backToSplash: true}),
       new Label({string: "Unsync a container", top: 60, style: new Style({ font: "20px", color: "black" })}),
       new typeField({name1: "", name2: "", placeholder1: "Container #...", placeholder2: "Container Date"}),
-      new buttonTemplate({text: "Unsync Container", action: "confirmUnsync", top: 330, bottom: 100, left: 50, right: 50, skin: new Skin({ fill: "#a181ef"}), style: smallWhite})
+      new buttonTemplate({text: "Unsync Container", action: "confirmUnsync", top: 330, bottom: 100, left: 50, right: 50, skin: new Skin({ fill: "#4fe372"}), style: smallWhite})
     ],
     Behavior: class extends Behavior { //
         onTouchEnded(content) {
@@ -330,10 +384,11 @@ function viewTapped(){
     application.add(new containerDetailScreen({
         content:[
             new appHeader({backButton: "back", backToSplash: false}),
-            new Label({top:100, string: curContainer, style: smallBlack}),
-            new Label({top:150, string: curContainerNumber, style: smallBlack}),
-            new Label({top:200, string: curContainerDate, style: smallBlack}),
-            new Label({top:250, string: "Food is " + curContainerFoodStatus + "!", style: new Style({ font: "20px", color: color })}),
+            new Picture({top: -75, width: 100, url: curContainerImage }),
+            new Label({top:200, string: curContainer, style: smallBlack}),
+            new Label({top:250, string: curContainerNumber, style: smallBlack}),
+            new Label({top:300, string: curContainerDate, style: smallBlack}),
+            new Label({top:350, string: "Food is " + curContainerFoodStatus + "!", style: new Style({ font: "20px", color: color })}),
         ]
     }));
 }
@@ -348,7 +403,7 @@ function foodContainers(){
     for (var x = 0; x < keys.length; x++){
         var i = keys[x];
         // top += 70;
-        ret.push(new smartContainer({title: allFoodContainers[i].title, number: "#" + i, date: allFoodContainers[i].date, top: 5}),);
+        ret.push(new smartContainer({title: allFoodContainers[i].title, number: "#" + i, date: allFoodContainers[i].date, picture:allFoodContainers[i].picture, top: 5}),);
     }
     return ret;
 }
@@ -357,7 +412,6 @@ let homeScreen = Container.template($ => ({
     top: 0, bottom: 0, left: 0, right: 0,
     active: true, skin: new Skin({ fill : "#fafafa" }),
     contents: [
-        new appHeader({backButton: "back", backToSplash: true}),
         VerticalScroller($, {
           active: true, top: 45, bottom: 0,name: 'scroller',
           contents: [
@@ -366,7 +420,8 @@ let homeScreen = Container.template($ => ({
         TopScrollerShadow(),
         BottomScrollerShadow(),
     ]
-  })
+  }),
+  new appHeader({backButton: "back", backToSplash: true}),
     ]
 }));
 
@@ -453,7 +508,7 @@ left: 0, right: 0, top: 80,height:2,
 skin: new Skin({ fill: "black" })
 });
 
-let kinomaLogo = new Picture({height: 90, url: "assets/lasagna.jpg"});
+let kinomaLogo = new Picture({height: 90, url: "assets/lasagn.jpg"});
 kinomaLogo.coordinates = {height: 110, left: 0, right:0, top: 105, width: 100};
 
 var ready = new Label({name: "ready", left:0, right: 120, top:180, height:20, string:"Ready by:", style: labelStyle2});
@@ -477,8 +532,8 @@ let ReheatPage = Container.template($ => ({
       container,
       kinomaLogo,
       ready,
-      new typeField({name1: "11/10/16", name2: "2:30 pm", placeholder1: "mm/dd/yy", placeholder2: "time (ex: 2:00 pm)"}),
-      new buttonTemplate({text: "Reheat", action: "reheatConfirm", top: 330, bottom: 100, left: 50, right: 50, skin: new Skin({ fill: "#a181ef"}), style: smallWhite})
+      new typeField({name1: "", name2: "", placeholder1: "mm/dd/yy", placeholder2: "time (ex: 2:00 pm)"}),
+      new buttonTemplate({text: "Reheat", action: "reheatConfirm", top: 330, bottom: 100, left: 50, right: 50, skin: new Skin({ fill: "#4fe372"}), style: smallWhite})
     ],
     Behavior: class extends Behavior { //
         onTouchEnded(content) {
@@ -495,7 +550,7 @@ let ReheatConfirmPage = Container.template($ => ({
     skin: orangeSkin, active: true,
     contents: [
       new Label({name: "ready", left:0, right: 0, top:180, height:20, string:"Reheat set: " + globalDate + ", " + globalTime, style: labelStyle2}),
-      new buttonTemplate({text: "Ok", action: "reheatAndGoHome", top: 330, bottom: 100, left: 50, right: 50, skin: new Skin({ fill: "#a181ef"}), style: smallWhite})
+      new buttonTemplate({text: "Ok", action: "reheatAndGoHome", top: 330, bottom: 100, left: 50, right: 50, skin: new Skin({ fill: "#4fe372"}), style: smallWhite})
     ],
     Behavior: class extends Behavior { //
         onTouchEnded(content) {
@@ -504,10 +559,6 @@ let ReheatConfirmPage = Container.template($ => ({
         }
     }
 }));
-
-
-
-
 
 
 // LOCK PAGE
@@ -546,8 +597,8 @@ let LockPage = Container.template($ => ({
       container2,
       kinomaLogo2,
       until2,
-      new typeField({name1: "11/10/16", name2: "2:30 pm", placeholder1: "mm/dd/yy", placeholder2: "time (ex: 2:00 pm)"}),
-      new buttonTemplate({text: "Lock", action: "lockConfirm", top: 330, bottom: 100, left: 50, right: 50, skin: new Skin({ fill: "#a181ef"}), style: smallWhite})
+      new typeField({name1: "", name2: "", placeholder1: "mm/dd/yy", placeholder2: "time (ex: 2:00 pm)"}),
+      new buttonTemplate({text: "Lock", action: "lockConfirm", top: 330, bottom: 100, left: 50, right: 50, skin: new Skin({ fill: "#4fe372"}), style: smallWhite})
       // new MyButtonTemplate()
     ],
     Behavior: class extends Behavior { //
@@ -565,7 +616,7 @@ let LockConfirmPage = Container.template($ => ({
     skin: orangeSkin, active: true,
     contents: [
       new Label({name: "ready", left:0, right: 0, top:180, height:20, string:"Locked until: " + globalDate + ", " + globalTime, style: labelStyle2}),
-      new buttonTemplate({text: "Ok", action: "addLockAndGoHome", top: 330, bottom: 100, left: 50, right: 50, skin: new Skin({ fill: "#a181ef"}), style: smallWhite})
+      new buttonTemplate({text: "Ok", action: "addLockAndGoHome", top: 330, bottom: 100, left: 50, right: 50, skin: new Skin({ fill: "#4fe372"}), style: smallWhite})
     ],
     Behavior: class extends Behavior { //
         onTouchEnded(content) {
@@ -583,7 +634,7 @@ let foodPage = Container.template($ => ({
     contents: [
       new appHeader({backButton: "back", backToSplash: true}),
       new typeField({name1: "", name2: "", placeholder1: "Descriptive Name", placeholder2: "Container #..."}),
-      new buttonTemplate({text: "Add Food", action: "confirmFood", top: 330, bottom: 100, left: 50, right: 50, skin: new Skin({ fill: "#a181ef"}), style: smallWhite})
+      new buttonTemplate({text: "Add Food", action: "confirmFood", top: 330, bottom: 100, left: 50, right: 50, skin: new Skin({ fill: "#4fe372"}), style: smallWhite})
     ],
     Behavior: class extends Behavior { //
         onTouchEnded(content) {
