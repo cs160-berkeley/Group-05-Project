@@ -10,9 +10,7 @@ import {
     FieldLabelBehavior
 } from 'field';
 
-import {
-    SystemKeyboard
-} from 'keyboard';
+import KEYBOARD from './keyboard';
 
 import {
    VerticalScroller,
@@ -263,7 +261,7 @@ let syncScreen = Container.template($ => ({
     ],
     Behavior: class extends Behavior { //
         onTouchEnded(content) {
-            SystemKeyboard.hide();
+            KEYBOARD.hide();
             content.focus();
         }
     }
@@ -281,7 +279,7 @@ let unsyncScreen = Container.template($ => ({
     ],
     Behavior: class extends Behavior { //
         onTouchEnded(content) {
-            SystemKeyboard.hide();
+            KEYBOARD.hide();
             content.focus();
         }
     }
@@ -484,7 +482,7 @@ let ReheatPage = Container.template($ => ({
     ],
     Behavior: class extends Behavior { //
         onTouchEnded(content) {
-            SystemKeyboard.hide();
+            KEYBOARD.hide();
             content.focus();
         }
     }
@@ -501,7 +499,7 @@ let ReheatConfirmPage = Container.template($ => ({
     ],
     Behavior: class extends Behavior { //
         onTouchEnded(content) {
-            SystemKeyboard.hide();
+            KEYBOARD.hide();
             content.focus();
         }
     }
@@ -554,7 +552,7 @@ let LockPage = Container.template($ => ({
     ],
     Behavior: class extends Behavior { //
         onTouchEnded(content) {
-            SystemKeyboard.hide();
+            KEYBOARD.hide();
             content.focus();
         }
     }
@@ -571,7 +569,7 @@ let LockConfirmPage = Container.template($ => ({
     ],
     Behavior: class extends Behavior { //
         onTouchEnded(content) {
-            SystemKeyboard.hide();
+            KEYBOARD.hide();
             content.focus();
         }
     }
@@ -589,7 +587,7 @@ let foodPage = Container.template($ => ({
     ],
     Behavior: class extends Behavior { //
         onTouchEnded(content) {
-            SystemKeyboard.hide();
+            KEYBOARD.hide();
             content.focus();
         }
     }
