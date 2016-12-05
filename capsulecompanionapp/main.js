@@ -240,7 +240,7 @@ let splashScreen = Container.template($ => ({
     contents: [
         new Picture({
             width: 320, top: -35,
-            url: "assets/logo.png",
+            url: "assets/capsule_logo.png",
         }),
         new buttonTemplate({text: "Current Capsules", action: "getStarted", top: 150, bottom: 190, left: 15, right: 165, skin: new Skin({ fill: "#ff6666"}), style: new Style({ font: "16px", color: "white" })}),
         new buttonTemplate({text: "Sync Capsule", action: "syncContainer", top: 150, bottom: 190, left: 165, right: 15, skin: new Skin({ fill: "#79cdcd"}), style: new Style({ font: "16px", color: "white" })}),
