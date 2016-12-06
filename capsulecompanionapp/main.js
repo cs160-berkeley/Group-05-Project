@@ -691,16 +691,29 @@ class AppBehavior extends Behavior {
                 if (connectionDesc.name == "pins-share-led") {
                     trace("Connecting to remote pins\n");
                     remotePins = Pins.connect(connectionDesc);
+                    var changedScreen = false;
                     remotePins.repeat("/led2/read", 50, function(result) {
                        if (result == 0.3) {
                         curContainerFoodStatus = "Edible";
-                        if (curContainer) viewTapped();
+                        if (curContainer){
+                            if (!changedScreen) viewTapped();
+                            changedScreen = true;
+                        }
                        } else if (result == 0.5){
                         curContainerFoodStatus = "Bad";
-                        if (curContainer) viewTapped();
+                        if (curContainer){ 
+                            if (!changedScreen) viewTapped();
+                            changedScreen = true;
+                        }
                        } else if (result == 0.7){
                         curContainerFoodStatus = "Fresh";
-                        if (curContainer) viewTapped();
+                        if (curContainer){
+                            if (!changedScreen) viewTapped();
+                            changedScreen = true;
+                        }
+                       }
+                       if (result == 0){
+                         changedScreen = false;
                        }
                     });
 
