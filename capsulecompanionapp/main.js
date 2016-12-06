@@ -22,8 +22,8 @@ import {
 
 
 // Various Styles to reuse
-let smallBlack = new Style({ font: "15px", color: "black" });
-let smallWhite = new Style({ font: "15px", color: "white" });
+let smallBlack = new Style({ font: "15px Lato", color: "black" });
+let smallWhite = new Style({ font: "15px Lato", color: "white" });
 let transparentSkin = new Skin({fill: "transparent"});
 
 // Background
@@ -125,7 +125,7 @@ let pictureTemplate = Button.template($ => ({
             width: $.width,
             url: "assets/" + $.name + $.imgExt,
         }),
-        new Label({string: $.text, top: 30, style: new Style({ font: "13px", color: "black" })}),
+        new Label({string: $.text, top: 30, style: new Style({ font: "13px Lato", color: "black" })}),
         ifPictureHasTime($)
     ],
     Behavior: class extends ButtonBehavior {
@@ -154,8 +154,8 @@ let viewContainer = Button.template($ => ({
             url: $.picture,
         }),
         new Label({left: 60, top:10, string: $.title, style: smallBlack}),
-        new Label({left: 60, top:25, string: $.number, style: new Style({ font: "13px", color: "black" })}),
-        new Label({left: 60, top:45, string: $.date, style: new Style({ font: "10px", color: "black" })}),
+        new Label({left: 60, top:25, string: $.number, style: new Style({ font: "13px Lato", color: "black" })}),
+        new Label({left: 60, top:45, string: $.date, style: new Style({ font: "10px Lato", color: "black" })}),
     ],
     Behavior: class extends ButtonBehavior {
         onTap(button){
@@ -286,7 +286,6 @@ let splashButtonTemplate = Button.template($ => ({
     }
 }));
 
-
 // Splash screen for Capsule
 let splashScreen = Container.template($ => ({
     top: 0, bottom: 0, left: 0, right: 0, name: "splashScreen",
@@ -296,10 +295,10 @@ let splashScreen = Container.template($ => ({
             width: 320, top: -35,
             url: "assets/capsule_logo.png",
         }),
-        new buttonTemplate({text: "Current Capsules", action: "getStarted", top: 150, bottom: 190, left: 15, right: 165, skin: new Skin({ fill: "#4fe372"}), style: new Style({ font: "16px", color: "white" })}),
-        new buttonTemplate({text: "Sync Capsule", action: "syncContainer", top: 150, bottom: 190, left: 165, right: 15, skin: new Skin({ fill: "#08CA33"}), style: new Style({ font: "16px", color: "white" })}),
-        new buttonTemplate({text: "Unsync Capsule", action: "unsyncContainer", top: 300, bottom: 40, left: 15, right: 165, skin: new Skin({ fill: "#08CA33"}), style: new Style({ font: "16px", color: "white" })}),
-        new buttonTemplate({text: "Add Food", action: "addFood", top: 300, bottom: 40, left: 165, right: 15, skin: new Skin({ fill: "#4fe372"}), style: new Style({ font: "16px", color: "white" })})
+        new buttonTemplate({text: "Current Capsules", action: "getStarted", top: 150, bottom: 190, left: 15, right: 165, skin: new Skin({ fill: "#4fe372"}), style: new Style({ font: "16px Lato Lato", color: "white" })}),
+        new buttonTemplate({text: "Sync Capsule", action: "syncContainer", top: 150, bottom: 190, left: 165, right: 15, skin: new Skin({ fill: "#08CA33"}), style: new Style({ font: "16px Lato Lato", color: "white" })}),
+        new buttonTemplate({text: "Unsync Capsule", action: "unsyncContainer", top: 300, bottom: 40, left: 15, right: 165, skin: new Skin({ fill: "#08CA33"}), style: new Style({ font: "16px Lato", color: "white" })}),
+        new buttonTemplate({text: "Add Food", action: "addFood", top: 300, bottom: 40, left: 165, right: 15, skin: new Skin({ fill: "#4fe372"}), style: new Style({ font: "16px Lato", color: "white" })})
     ],
 }));
 
@@ -343,7 +342,7 @@ let unsyncScreen = Container.template($ => ({
 
 function ifPictureHasTime($){
     if ($.time){
-        return new Label({string: $.time, top: 40, style: new Style({ font: "10px", color: "black" })})
+        return new Label({string: $.time, top: 40, style: new Style({ font: "10px Lato", color: "black" })})
     }
 }
 
@@ -390,7 +389,7 @@ function viewTapped(){
             new Label({top:200, string: curContainer, style: smallBlack}),
             new Label({top:250, string: curContainerNumber, style: smallBlack}),
             new Label({top:300, string: curContainerDate, style: smallBlack}),
-            new Label({top:350, string: "Food is " + curContainerFoodStatus + "!", style: new Style({ font: "20px", color: color })}),
+            new Label({top:350, string: "Food is " + curContainerFoodStatus + "!", style: new Style({ font: "20px Lato", color: color })}),
         ]
     }));
 }
@@ -435,9 +434,9 @@ let home = new homeScreen();
 //double stacked field for date/time input
 //**
 let nameInputSkin = new Skin({ borders: { left: 2, right: 2, top: 2, bottom: 2 }, stroke: 'gray' });
-let fieldStyle = new Style({ color: 'black', font: 'bold 24px', horizontal: 'left',
+let fieldStyle = new Style({ color: 'black', font: 'bold 24px Lato', horizontal: 'left',
     vertical: 'middle', left: 5, right: 5, top: 5, bottom: 5 });
-let fieldHintStyle = new Style({ color: '#aaa', font: '24px', horizontal: 'left',
+let fieldHintStyle = new Style({ color: '#aaa', font: '24px Lato', horizontal: 'left',
     vertical: 'middle', left: 5, right: 5, top: 5, bottom: 5 });
 let whiteSkin = new Skin({ fill: "white" });
 let fieldLabelSkin = new Skin({ fill: ['transparent', 'transparent', '#C0C0C0', '#acd473'] });
@@ -497,11 +496,11 @@ let typeField = Column.template($ => ({
 
 // REHEAT PAGE
 
-var labelStyle = new Style( { font: "bold 25px", color:"black" } );
-var labelStyle2 = new Style( { font: "bold 20px", color:"black" } );
-var labelStyle3 = new Style( { font: "20px", color:"black" } );
+var labelStyle = new Style( { font: "bold 25px Lato", color:"black" } );
+var labelStyle2 = new Style( { font: "bold 20px Lato", color:"black" } );
+var labelStyle3 = new Style( { font: "20px Lato", color:"black" } );
 var orangeSkin = new Skin({ fill: 'white' });
-var bigText = new Style({ font: "bold 14px", color: "#333333" });
+var bigText = new Style({ font: "bold 14px Lato", color: "#333333" });
 
 var reheat = new Label({name: "reheat", left:0, right: 0, top:50, height:20, string:"Reheat Lasagna Container", style: labelStyle});
 
