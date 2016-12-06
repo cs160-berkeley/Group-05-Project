@@ -312,6 +312,7 @@ let splashScreen = Container.template($ => ({
         new buttonTemplate({text: "Unsync Capsule", action: "unsyncContainer", top: 300, bottom: 40, left: 15, right: 165, skin: new Skin({ fill: "#4fe372"}), style: new Style({ font: "16px Lato", color: "white" })}),
         new buttonTemplate({text: "Add Food", action: "addFood", top: 300, bottom: 40, left: 165, right: 15, skin: new Skin({ fill: "#4fe372"}), style: new Style({ font: "16px Lato", color: "white" })})
     ],
+
 }));
 
 //sync for food containers
@@ -631,7 +632,7 @@ let MyButtonTemplate2 = Button.template($ => ({
 }));
 
 let LockPage = Container.template($ => ({
-    top: 0, bottom: 0, left: 0, right: 0,
+    top: 0, bottom: 0, left: 0, right: 0, active: true,
     skin: orangeSkin,
     contents: [
       new appHeader({backButton: "back"}),
