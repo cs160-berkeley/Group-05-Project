@@ -295,7 +295,7 @@ let splashScreen = Container.template($ => ({
             width: 320, top: -35,
             url: "assets/capsule_logo.png",
         }),
-        new buttonTemplate({text: "Current Capsules", action: "getStarted", top: 150, bottom: 190, left: 15, right: 165, skin: new Skin({ fill: "#4fe372"}), style: new Style({ font: "16px Lato Lato", color: "white" })}),
+        new buttonTemplate({text: "Current Capsules", action: "getStarted", top: 150, bottom: 190, left: 15, right: 165, skin: new Skin({ fill: "#4fe372"}), style: new Style({ font: "16px Lato", color: "white" })}),
         new buttonTemplate({text: "Sync Capsule", action: "syncContainer", top: 150, bottom: 190, left: 165, right: 15, skin: new Skin({ fill: "#08CA33"}), style: new Style({ font: "16px Lato Lato", color: "white" })}),
         new buttonTemplate({text: "Unsync Capsule", action: "unsyncContainer", top: 300, bottom: 40, left: 15, right: 165, skin: new Skin({ fill: "#08CA33"}), style: new Style({ font: "16px Lato", color: "white" })}),
         new buttonTemplate({text: "Add Food", action: "addFood", top: 300, bottom: 40, left: 165, right: 15, skin: new Skin({ fill: "#4fe372"}), style: new Style({ font: "16px Lato", color: "white" })})
