@@ -63,7 +63,7 @@ let viewContainer = Button.template($ => ({
             currentContainer = button.name;
             globalStatus = "unlocked";
             application.remove(application.first);
-            application.add(new MainContainer({ string: "Ready!", backgroundColor: "#2e2e2e" }));
+            application.add(new MainContainer({ string: "Ready!", backgroundColor: "#191919" }));
         }
     }
 }));
@@ -107,7 +107,7 @@ let contentToScrollVertically = new Column({
 
     if (type == "getStarted"){
         application.remove(application.first);
-        application.add(new MainContainer({ string: "Ready!", backgroundColor: "#2e2e2e" }));
+        application.add(new MainContainer({ string: "Ready!", backgroundColor: "#191919" }));
     }
 
 }
@@ -156,19 +156,22 @@ let infoContainer = Button.template($ => ({
     }
 }));
 
-let sentLabel = new Label({top: 150, bottom: 80, left: 100, right: 100, style: largeWhite, string: "Notified!" });
+let sentLabel = new Label({top: 162, bottom: 68, left: 100, right: 100, style: largeWhite, string: "Notified!" });
 
 // Main container for the device app
 let MainContainer = Container.template($ => ({
     top: 0, bottom: 0, left: 0, right: 0,
     skin: new Skin({ fill: $.backgroundColor }),
     contents: [
+        new Picture({
+            width: 300, top: 40,
+            url: "assets/capsule_logo.png",
+        }),
         new buttonTemplate({name: "viewFood", action: "viewFood", text: "View containers", top: 10, bottom: 140, left: 180, right: 10, skin: new Skin({fill: "#e74c3c"}), style: smallerComicStyle}),
         new infoContainer({args: $, name: "hungerStatus", text: currentContainer, top: 10, bottom: 140, skin: new Skin({fill: "#2ecc71"}), style: comicStyle, action: "Hungry!"}),
-        new Label({top:102, string: "Capsule (add logo)", style:textStyle }),
-        new buttonTemplate({name: "sendBad", action: "sendBad", text: "Spoiled", top: 180, bottom: 10, left: 10, right: 220, skin: new Skin({fill: "red"}), style: smallerComicStyle}),
-        new buttonTemplate({name: "sendOK", action: "sendOK", text: "Edible", top: 180, bottom: 10, left: 120, right: 120, skin: new Skin({fill: "yellow"}), style: smallerComicStyle}),
-        new buttonTemplate({name: "sendFresh", action: "sendFresh", text: "Fresh", top: 180, bottom: 10, left: 220, right: 10, skin: new Skin({fill: "green"}), style: smallerComicStyle}),
+        new buttonTemplate({name: "sendBad", action: "sendBad", text: "Spoiled", top: 180, bottom: 10, left: 10, right: 220, skin: new Skin({fill: "#e74c3c"}), style: smallerComicStyle}),
+        new buttonTemplate({name: "sendOK", action: "sendOK", text: "Edible", top: 180, bottom: 10, left: 120, right: 120, skin: new Skin({fill: "#FFFF99"}), style: smallerComicStyle}),
+        new buttonTemplate({name: "sendFresh", action: "sendFresh", text: "Fresh", top: 180, bottom: 10, left: 220, right: 10, skin: new Skin({fill: "#2ecc71"}), style: smallerComicStyle}),
     ],
 }));
 
@@ -267,20 +270,20 @@ class AppBehavior extends Behavior {
         },  success => {
             if (success) {
                 Pins.share("ws", {zeroconf: true, name: "pins-share-led"});
-                application.add(new MainContainer({ string: "Ready!", backgroundColor: "#2e2e2e" }));
+                application.add(new MainContainer({ string: "Ready!", backgroundColor: "#191919" }));
                 Pins.repeat("/led/read", 500, value => {
                     if (value == 0.5){
                         application.remove(application.first);
                         globalStatus = "locked";
-                        application.add(new MainContainer({ string: "Ready!", backgroundColor: "#2e2e2e", status: "locked" }));
+                        application.add(new MainContainer({ string: "Ready!", backgroundColor: "#191919", status: "locked" }));
                     } else if (value == 0.7){
                         application.remove(application.first);
                         globalStatus = "reheated";
-                        application.add(new MainContainer({ string: "Ready!", backgroundColor: "#2e2e2e", status: "reheated" }));
+                        application.add(new MainContainer({ string: "Ready!", backgroundColor: "#191919", status: "reheated" }));
                     } else if (value == 0.9){
                         application.remove(application.first);
                         globalStatus = "incubated";
-                        application.add(new MainContainer({ string: "Ready!", backgroundColor: "#2e2e2e", status: "incubated" }));
+                        application.add(new MainContainer({ string: "Ready!", backgroundColor: "#191919", status: "reheated" }));
                     }
                 });
             } else {
