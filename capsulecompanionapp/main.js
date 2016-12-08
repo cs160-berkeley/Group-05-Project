@@ -48,7 +48,7 @@ var count = 0;
 
 // Keep track of which locked
 var lockedContainers = [];
-var incubateContainers = [{title: "Lasagna"}];
+var incubateContainers = [{title: "Avocados"}, {title: "Fruits"}];
 var curContainer = null;
 var curContainerImage;
 var curContainerNumber;
@@ -59,6 +59,13 @@ var allFoodContainers = {
     3 : {title: "Lasagna", date: "10/14/16", picture: "assets/lasagna.jpg"},
     5 : {title: "Fruits", date: "10/15/16", picture: "assets/fruit.jpg"},
     4 : {title: "Vegetables", date: "10/16/16", picture: "assets/vegetables.jpg"}
+};
+var extraPics = {
+    "sandwich" : "assets/sandwich.jpg",
+    "placeholder" : "assets/imgplaceholder.jpg",
+    "donut" : "assets/donut.jpg",
+    "bagel" : "assets/bagel.jpg",
+    "burger" : "assets/burger.jpg"
 };
 
 
@@ -197,6 +204,14 @@ let contentToScrollVertically = Column.template($ => ({
         contents: foodContainers(),
 }));
 
+function getFoodImage(title){
+    if (extraPics[title]){
+        return extraPics[title]
+    } else{
+        return extraPics["placeholder"];
+    }
+}
+
 // Controls behavior of all buttons built with ButtonTemplate
 function buttonOnTap(action){
     if (action == 'getStarted'){ // splash -> home
@@ -243,7 +258,7 @@ function buttonOnTap(action){
         if (allFoodContainers[globalTime]){
             allFoodContainers[globalTime].title = globalDate;
             incubateContainers.push({title: globalDate});
-            allFoodContainers[globalTime].picture = "assets/sandwich.jpg";
+            allFoodContainers[globalTime].picture = getFoodImage(globalDate);
         }
         application.remove(application.first);
         application.add(new homeScreen());
