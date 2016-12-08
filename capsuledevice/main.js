@@ -277,6 +277,10 @@ class AppBehavior extends Behavior {
                         application.remove(application.first);
                         globalStatus = "reheated";
                         application.add(new MainContainer({ string: "Ready!", backgroundColor: "#2e2e2e", status: "reheated" }));
+                    } else if (value == 0.9){
+                        application.remove(application.first);
+                        globalStatus = "incubated";
+                        application.add(new MainContainer({ string: "Ready!", backgroundColor: "#2e2e2e", status: "incubated" }));
                     }
                 });
             } else {

@@ -48,6 +48,7 @@ var count = 0;
 
 // Keep track of which locked
 var lockedContainers = [];
+var incubateContainers = [{title: "Lasagna"}];
 var curContainer = null;
 var curContainerImage;
 var curContainerNumber;
@@ -147,8 +148,8 @@ let pictureTemplate = Button.template($ => ({
                 application.add(lockPage);
             } else if ($.text == "Incubate"){
                 application.remove(application.first);
-                reheat.string = "Incubate" + button.container.name;
-                application.add(new IncubatePage());
+                incubate.string = "Incubate " + button.container.name;
+                application.add(incubatePage);
             }
         }
     }
@@ -204,12 +205,17 @@ function buttonOnTap(action){
     }
     if (action == 'addLockAndGoHome'){
         lockedContainers.push({title: curContainer, date: globalDate, time: globalTime});
-        application.distribute('onLockorReheatContainer', 0.5);
+        application.distribute('onLockorReheatorIncubateContainer', 0.5);
         application.remove(application.first);
         application.add(new homeScreen());
     }
     if (action == 'reheatAndGoHome'){
-        application.distribute('onLockorReheatContainer', 0.7);
+        application.distribute('onLockorReheatorIncubateContainer', 0.7);
+        application.remove(application.first);
+        application.add(new homeScreen());
+    }
+    if (action == 'incubateAndGoHome'){
+        application.distribute('onLockorReheatorIncubateContainer', 0.9);
         application.remove(application.first);
         application.add(new homeScreen());
     }
@@ -225,6 +231,10 @@ function buttonOnTap(action){
         application.remove(application.first);
         application.add(new LockConfirmPage({}));
     }
+    if (action == 'incubateConfirm'){
+        application.remove(application.first);
+        application.add(new IncubateConfirmPage({}));
+    }
     if (action == 'addFood'){
         application.remove(application.first);
         application.add(new foodPage());
@@ -232,6 +242,7 @@ function buttonOnTap(action){
     if (action == 'confirmFood'){
         if (allFoodContainers[globalTime]){
             allFoodContainers[globalTime].title = globalDate;
+            incubateContainers.push({title: globalDate});
         }
         application.remove(application.first);
         application.add(new homeScreen());
@@ -380,12 +391,13 @@ function isLockedOrUnlocked($){
     return new pictureTemplate({name: "unlocked", imgExt:".png", text: "Lock", time: "", top: 10, left: 250, bottom: 30, skin: transparentSkin, width: 30}),
 }
 function isReheatOrIncubate($){
-    
-    if(radioButtonSelected == "Reheat" || radioButtonSelected == ""){
-        return new pictureTemplate({name: "lit", imgExt:".png", text: "Reheat", top: 10, left: 150, bottom: 30, skin: transparentSkin, width: 30}),
-    } else {
+    for (var i = 0; i < incubateContainers.length; i++){
+        var cont = incubateContainers[i];
+        if (cont.title == $.title){
         return new pictureTemplate({name: "incubate", imgExt:".png", text: "Incubate", top: 10, left: 150, bottom: 30, skin: transparentSkin, width: 30}),
+        }
     }
+    return new pictureTemplate({name: "lit", imgExt:".png", text: "Reheat", top: 10, left: 150, bottom: 30, skin: transparentSkin, width: 30}),
 }
 
 
@@ -561,17 +573,29 @@ let ReheatPage = Container.template($ => ({
         }
     }
 }));
+
+var container3 = new Container({
+left: 0, right: 0, top: 80,height:2,
+skin: new Skin({ fill: "black" })
+});
+
+let kinomaLogo3 = new Picture({height: 90, url: "assets/lasagn.jpg"});
+kinomaLogo3.coordinates = {height: 110, left: 0, right:0, top: 105, width: 100};
+
+var ready3 = new Label({name: "ready", left:0, right: 120, top:180, height:20, string:"Ready by:", style: labelStyle2});
+
+
 let IncubatePage = Container.template($ => ({
     top: 0, bottom: 0, left: 0, right: 0,
     skin: orangeSkin, active: true,
     contents: [
       new appHeader({backButton: "back"}),
-      reheat,
-      container,
-      kinomaLogo,
-      ready,
+      incubate,
+      container3,
+      kinomaLogo3,
+      ready3,
       new typeField({name1: "", name2: "", placeholder1: "mm/dd/yy", placeholder2: "time (ex: 2:00 pm)"}),
-      new buttonTemplate({text: "Incubate", action: "reheatConfirm", top: 330, bottom: 100, left: 50, right: 50, skin: new Skin({ fill: "#4fe372"}), style: smallWhite})
+      new buttonTemplate({text: "Incubate", action: "incubateConfirm", top: 330, bottom: 100, left: 50, right: 50, skin: new Skin({ fill: "#4fe372"}), style: smallWhite})
     ],
     Behavior: class extends Behavior { //
         onTouchEnded(content) {
@@ -581,7 +605,20 @@ let IncubatePage = Container.template($ => ({
     }
 }));
 
-
+let IncubateConfirmPage = Container.template($ => ({
+    top: 0, bottom: 0, left: 0, right: 0,
+    skin: orangeSkin, active: true,
+    contents: [
+      new Label({name: "ready", left:0, right: 0, top:180, height:20, string:"Incubate set: " + globalDate + ", " + globalTime, style: labelStyle2}),
+      new buttonTemplate({text: "Ok", action: "incubateAndGoHome", top: 330, bottom: 100, left: 50, right: 50, skin: new Skin({ fill: "#4fe372"}), style: smallWhite})
+    ],
+    Behavior: class extends Behavior { //
+        onTouchEnded(content) {
+            KEYBOARD.hide();
+            content.focus();
+        }
+    }
+}));
 
 //New: reheating lock page
 
@@ -703,7 +740,7 @@ let foodPage = Container.template($ => ({
 // ADDS THE LOCK PAGE
 // application.add(new LockPage());
 
-// let incubatePage = new IncubatePage();
+let incubatePage = new IncubatePage();
 let reheatPage = new ReheatPage();
 let lockPage = new LockPage();
 
@@ -763,7 +800,7 @@ class AppBehavior extends Behavior {
             }
         );
     }
-    onLockorReheatContainer(application, value) {
+    onLockorReheatorIncubateContainer(application, value) {
         // send 0.5 to lock, send 0.7 to reheat
         if (remotePins) remotePins.invoke("/led/write", value);
         setTimeout(function(){remotePins.invoke("/led/write", 0);}, 2000);
